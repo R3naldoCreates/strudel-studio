@@ -1,0 +1,534 @@
+<!doctype html>
+<!--
+  Strudel Studio — GitHub Pages project site
+  kind: software (page type software, site-kind software)
+  plan line 2: hero = split (text left, one window right); re-dealt 2026-11-15 with reason:
+    triptych's recipe is multi-output products (menus/posters/screens); Strudel Studio is a
+    single dark window, so the ui-capable split is the fit.
+  Palette = graphite-safety-orange (first dealt pick white-link-blue clashes with the
+    client's own dark graphite brand + screenshots; graphite + safety-orange is the devtool pick).
+  Type = host (Host Grotesk + JetBrains Mono). Ground = topglow (dealt with the split hero).
+  nav-mega, footer-statement (inverse), close-type, dark-band rhythm (the community band),
+  solid buttons, wordmark mark. Moments: line-carries-colour, word-highlight (both dealt,
+  both on the inverse band). 2026-11-15.
+-->
+<!doctype html>
+<html lang="en" data-type="software" data-radius="soft" data-buttons="solid" data-ground="sand">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strudel Studio: live-code music without writing code</title>
+<meta name="description" content="Strudel Studio wraps the real Strudel live-coding engine in a DAW you drive with clicks: blocks, faders, an LFO, a take recorder. Free and open source, AGPL-3.0, runs 100% offline.">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="software">
+<meta name="theme-color" content="#18191b">
+<link rel="icon" href="icon.png" type="image/png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="canonical" href="https://r3naldocreates.github.io/strudel-studio/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Strudel Studio: live-code music without writing code">
+<meta property="og:description" content="The real Strudel engine in a DAW you drive with clicks: blocks, faders, an LFO, a take recorder. Every control writes real Strudel code. Free, AGPL-3.0, offline.">
+<meta property="og:url" content="https://r3naldocreates.github.io/strudel-studio/">
+<meta property="og:image" content="https://r3naldocreates.github.io/strudel-studio/images/app-hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400..500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<link rel="stylesheet" href="assets/ui/cards.css">
+<link rel="stylesheet" href="assets/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="assets/layout/layout.css">
+<!-- Keep this <style> after the links: layout.css resets --ly-scale -->
+<style>
+:root {
+  --p-bg: #18191b; --p-surface: #222427; --p-ink: #eff0f1; --p-muted: #c2c4c8;
+  --p-accent: #ff4a1f; --p-accent-ink: #18191b; --p-action: #ff4a1f; --p-action-ink: #18191b;
+  --p-inv-bg: #eff0f1; --p-inv-surface: #dedfe0; --p-inv-ink: #18191b; --p-inv-muted: #41424a;
+  --p-inv-accent: #ff4a1f; --p-inv-accent-ink: #18191b; --p-inv-action: #18191b; --p-inv-action-ink: #eff0f1;
+  --font-display: "Host Grotesk", system-ui, sans-serif;
+  --font-text: "Host Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.035em;
+  --display-tracking-xl: -0.04em;
+}
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* hero: one real window */
+.hero__media img { object-position: 12% 30%; background: #0e1118; }
+.ly-float .ly-live { position: relative; width: 8px; height: 8px; border-radius: 50%; background: #b6ff3b; display: inline-block; animation: live-breathe 2.4s ease-in-out infinite; }
+@keyframes live-breathe { 0%,100% { box-shadow: 0 0 0 0 rgba(182,255,59,.45); } 50% { box-shadow: 0 0 0 5px rgba(182,255,59,0); } }
+.hero__meta { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .08em; color: var(--p-muted); }
+.hero__meta b { color: #b6ff3b; font-weight: 500; }
+
+/* 2 · how it works */
+.steps-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.how-visual { height: 132px; overflow: hidden; border-radius: var(--r-md); border: 1px solid #26282c; margin: 0 0 18px; }
+.how-visual img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
+.step-card {
+  background: var(--p-surface); border: 1px solid #2a2c30; border-radius: var(--r-md);
+  padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 12px; min-height: 340px;
+}
+.step-icon { width: 46px; height: 46px; border-radius: 12px; background: #14161a; display: grid; place-items: center; color: var(--p-accent); }
+.step-num { font-family: var(--font-mono); font-weight: 500; font-size: 11px; color: var(--p-accent); letter-spacing: .16em; }
+.step-card h3 { font-size: 17px; line-height: 1.3; margin: 0; }
+.step-card p { font-size: 13px; line-height: 1.5; color: var(--p-muted); margin: 0; }
+
+/* 3 · features — bento, .g2: screen 1 = header + code + recorder; screen 2 = library + cheat sheet */
+.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; }
+.tile {
+  background: var(--p-surface); border: 1px solid #2a2c30; border-radius: var(--r-md);
+  overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+}
+.tile__text { padding: 16px 18px 14px; display: grid; gap: 6px; }
+.tile__text h3 { margin: 0; font-size: 16px; line-height: 1.3; letter-spacing: -0.01em; }
+.tile__text p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--p-muted); }
+.tile__text code { font-family: var(--font-mono); font-size: 11px; color: #b6ff3b; background: #14161a; border-radius: 6px; padding: 2px 6px; white-space: nowrap; }
+.tile__media { border-top: 1px solid #26282c; height: 150px; overflow: hidden; }
+.bento--lower { margin-top: 12px; }
+.tile__media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
+.tile--wide { grid-column: span 7; }
+.tile--narrow { grid-column: span 5; }
+.tile--half { grid-column: span 6; }
+
+/* 4 · the dealt inverse band — the community statement */
+.band { position: relative; overflow: hidden; background: var(--p-inv-bg); color: var(--p-inv-ink); }
+.band .band-inner { padding: 64px 0; display: flex; flex-direction: column; justify-content: center; height: 100%; position: relative; }
+.statement {
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  font-size: clamp(23px, 2.2vw + 16px, 42px); line-height: 1.22; letter-spacing: var(--display-tracking);
+  max-width: 56ch; margin: 0;
+}
+.statement .w { color: #18191b; }
+.statement .w.acc { color: var(--p-accent); }
+.band-credit { font-size: 14.5px; line-height: 1.6; color: var(--p-inv-muted); max-width: 62ch; margin: 18px 0 0; }
+.band-credit b { color: var(--p-inv-ink); font-weight: 600; }
+.band-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.band-links a {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 12px 20px; border-radius: var(--r-btn);
+  background: #18191b; color: #eff0f1; text-decoration: none; font-weight: 600; font-size: 13px;
+}
+.band-links a:hover { background: #2c2d30; }
+.band .t-label { color: #4b4c53; }
+.band-thumb { display: block; height: 158px; width: 100%; object-fit: cover; object-position: 16% 44%; border-radius: var(--r-md); border: 1px solid #dedfe0; margin: 4px 0 20px; }
+.band-mock {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: #18191b;
+  background: #ffffff; padding: 14px 0; border-radius: 0;
+  display: block; margin: 0 0 22px; width: 100%; white-space: nowrap; max-width: 100%; overflow: hidden; line-height: 2;
+}
+.band-mock .cmt { color: #55565c; } .band-mock .tok { color: #b03a09; } .band-mock .tok2 { color: #084f8c; } .band-mock .tok3 { color: #155c15; }
+.band-note { font-family: var(--font-mono); font-weight: 500; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: #4b4c53; margin: 20px 0 0; }
+
+/* 5 · download */
+.download-grid { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 12px; }
+.dl-card {
+  background: var(--p-surface); border: 1px solid #2a2c30; border-radius: var(--r-md);
+  padding: 20px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: inherit;
+  transition: border-color .15s ease, transform .15s ease; min-height: 260px;
+}
+.dl-card:hover { border-color: var(--p-accent); transform: translateY(-2px); }
+.dl-card.recommended { border-color: var(--p-accent); }
+.dl-icon { color: var(--p-accent); display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: #14161a; }
+.dl-tag { font-family: var(--font-mono); font-weight: 500; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--p-accent); }
+.dl-thumb { width: 100%; height: 110px; object-fit: cover; object-position: 14% 40%; border-radius: 8px; border: 1px solid #26282c; display: block; }
+.dl-visual { height: 168px; overflow: hidden; border-radius: var(--r-md); border: 1px solid #26282c; margin: 0 0 14px; }
+.dl-visual img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 24%; display: block; }
+.dl-card h3 { margin: 0; font-size: 17px; padding: 0; }
+.dl-card p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--p-muted); }
+.dl-card code { font-family: var(--font-mono); font-size: 10.5px; color: #b6ff3b; background: #14161a; border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+.dl-cta { margin-top: auto; font-weight: 600; font-size: 13px; color: var(--p-accent); text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; }
+
+/* 6 · roadmap */
+.road-visual { margin: 0 0 14px; height: 148px; overflow: hidden; border-radius: var(--r-md); border: 1px solid #26282c; }
+.road-visual img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 26%; display: block; }
+.road-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.road-item { border: 1px solid #26282c; border-radius: var(--r-md); padding: 13px 16px; }
+.road-item span { display: block; font-family: var(--font-mono); font-weight: 500; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--p-muted); margin-bottom: 6px; }
+.road-item b { display: block; font-size: 13.5px; font-weight: 500; line-height: 1.4; }
+
+/* 7 · faq — one editor line to show what this is about */
+.qa-mock {
+  display: flex; align-items: center; gap: 14px; background: #14161a; border: none; border-radius: 0; padding: 10px 0; margin-bottom: 14px; width: 100%; line-height: 1.6;
+  font-family: var(--font-mono); font-size: 12.5px; color: #eff0f1; overflow: hidden; white-space: nowrap;
+}
+.qa-mock .tok { color: #ff9f43; }
+.qa-mock .tok2 { color: #35e0ff; }
+.qa-mock .tok3 { color: #b6ff3b; }
+.qa-mock .cmt { color: #5b5c66; }
+.qa details { border-bottom: 1px solid #26282c; padding: 4px 0; }
+.qa summary {
+  cursor: pointer; font-weight: 500; font-size: 15px; line-height: 1.4; list-style: none;
+  padding: 12px 34px 12px 0; position: relative;
+}
+.qa summary::-webkit-details-marker { display: none; }
+.qa summary::after { content: "+"; position: absolute; right: 6px; top: 11px; font-family: var(--font-mono); color: var(--p-accent); font-size: 20px; }
+.qa details[open] summary::after { content: "–"; }
+.faq .qa-a { padding: 0 0 13px; font-size: 12.5px; line-height: 1.45; color: var(--p-muted); max-width: 78ch; }
+.faq .qa-a a { color: var(--p-accent); text-decoration: none; font-weight: 500; }
+.faq .qa-a code { font-family: var(--font-mono); font-size: 11.5px; color: #b6ff3b; }
+
+/* 8 · close — the mock window fills the dealt empty air */
+.closing__line { color: var(--p-muted); max-width: 46ch; margin: 18px 0 0; }
+.closing__links { font-family: var(--font-mono); font-size: 12px; color: var(--p-muted); margin: 22px 0 0; display: flex; gap: 14px; flex-wrap: wrap; }
+.closing__links a { color: var(--p-muted); text-decoration: none; border-bottom: 1px solid #2a2c30; padding-bottom: 2px; display: inline-flex; align-items: center; min-height: 44px; }
+.closing__links a:hover { color: var(--p-ink); border-bottom-color: var(--p-accent); }
+.close-mock {
+  margin: 22px 0 26px; width: 100%; background: transparent; border: none; border-radius: 0;
+  padding: 14px 0; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.9; color: #eff0f1;
+}
+.close-mock .cmt { color: #5b5c66; }
+.close-mock .tok { color: #ff9f43; }
+.close-mock .tok2 { color: #35e0ff; }
+.close-mock .tok3 { color: #b6ff3b; }
+
+/* the coffee tab, right edge — a link, not a third button style */
+.support-btn {
+  position: static;
+  background: #18191b; color: #eff0f1; text-decoration: none;
+  font-weight: 600; font-size: 13px; padding: 13px 22px; min-height: 44px; min-width: 0;
+  border: none; border-radius: var(--r-btn);
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+}
+.support-btn:hover { background: #2c2d30; }
+
+/* footer statement */
+.footer--statement { background: var(--p-inv-bg); color: var(--p-inv-ink); }
+.wordmark-big {
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  font-size: clamp(34px, 11vw, 96px); line-height: .95; letter-spacing: var(--display-tracking-xl);
+  margin: 0; color: var(--p-inv-ink);
+}
+.footer--statement .footer__lede { color: var(--p-inv-muted); }
+.footer--statement .footer__col h4 { color: var(--p-inv-muted); }
+.footer--statement .footer__col ul li a { color: var(--p-inv-ink); }
+.footer--statement .footer__legal { color: #4b4c53; }
+.colophon { font-family: var(--font-mono); font-size: 10px; color: #55565c; letter-spacing: .02em; margin: 8px 0 0; padding-top: 8px; }
+
+/* responsive */
+@media (max-width: 1024px) and (min-width: 900px) {
+  .qa { columns: 2; column-gap: 22px; }
+  .qa details { break-inside: avoid; border-bottom: 1px solid #26282c; }
+  .qa-a { max-width: none; font-size: 13.5px; line-height: 1.6; padding: 2px 0 14px; }
+  .qa summary { font-size: 16.5px; padding: 15px 34px 15px 0; }
+}
+@media (min-width: 820px) and (max-width: 1023px) and (min-height: 1000px) {
+  .dl-visual { height: 220px; }
+}
+@media (max-width: 1023px) {
+
+  .wordmark-big { font-size: clamp(28px, 8.5vw, 64px); line-height: 1; }
+  .footer__lede { font-size: 15px; }
+  .footer__grid { margin-top: 14px; }
+  .colophon { font-size: 9.5px; }
+  .tile__media { height: 150px; }
+  .footer__grid > * { grid-column: 1 / -1 !important; }
+  .footer__grid { row-gap: 18px; }
+  .steps-grid, .road-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step-card { min-height: 0; }
+  .download-grid { grid-template-columns: 1fr; gap: 8px; }
+  .dl-card { min-height: 0; padding: 10px 12px; gap: 6px; }
+  .dl-visual { height: 88px; }
+  .dl-icon { width: 32px; height: 32px; border-radius: 8px; }
+  .dl-card h3 { font-size: 15px; }
+  .dl-card p { font-size: 11.5px; line-height: 1.4; }
+  .dl-card code { font-size: 10px; }
+  .dl-icon { width: 38px; height: 38px; border-radius: 10px; }
+  .dl-card p { font-size: 12.5px; line-height: 1.45; }
+  .tile--wide, .tile--narrow, .tile--half { grid-column: span 6; }
+  .tile__media { height: 130px; }
+  .tile__text p { font-size: 12px; }
+}
+@media (max-width: 639px) {
+  #how { padding-top: 52px; }
+  .qa { columns: 1; }
+  .qa summary { font-size: 16px; padding: 15px 34px 15px 0; }
+  .qa-a { font-size: 14px; line-height: 1.6; padding-bottom: 16px; }
+
+  .dl-visual { height: 220px; }
+  .how-visual { height: 210px; }
+  .road-visual { height: 230px; }
+  .band-thumb { height: 210px; }
+  .nav__actions .btn--primary { display: none; }
+  .support-btn { margin: 14px auto 0; }
+  .band-links { flex-direction: column; }
+  .band-links a { width: 100%; justify-content: flex-start; padding-left: 20px; }
+  .tile--wide, .tile--narrow, .tile--half { grid-column: span 12; }
+  .tile__media { height: 118px !important; }
+  #how, #features, #powered-by-strudel, #download, #roadmap, #faq { --hm: 2; }
+  .step-card { padding: 10px 12px 12px; gap: 6px; }
+  .step-icon { width: 34px; height: 34px; border-radius: 10px; }
+  .step-card h3 { font-size: 15px; }
+  .step-card p { font-size: 11.5px; }
+  .how-visual { height: 230px; }
+  .band-thumb { height: 230px; }
+  .tile__media { height: 100px !important; }
+  .tile__text { padding: 12px 14px 10px; }
+  .hero__text > * + * { margin-top: 12px; }
+  .hero { padding: 24px 0 20px; }
+  .hero__lead { font-size: 15px; line-height: 1.45; }
+  .hero__meta { font-size: 10.5px; }
+  .hero__kicker { font-size: 9.5px; }
+  .hero__media { min-height: 125px !important; }
+  .hero__lead { font-size: 16px; line-height: 1.5; }
+  .hero__kicker { font-size: 10px; }
+  .hero__media { min-height: 145px; }
+  .hero-text.hero__grid { row-gap: 0; }
+  .statement { font-size: 22px; }
+
+  .steps-grid, .road-grid { grid-template-columns: 1fr; }
+  .step-card { padding: 14px 16px 16px; min-height: 0; gap: 8px; }
+  .step-icon { width: 38px; height: 38px; border-radius: 10px; }
+  .step-card p { font-size: 12.5px; }
+  .hero__lead { font-size: 16px; line-height: 1.5; }
+  .hero__media { min-height: 180px; }
+  .statement { font-size: 23px; }
+  .qa-mock { font-size: 11px; }
+  .wordmark-big { font-size: 10vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ly-live { animation: none; }
+  .statement .w { transition: none; }
+}
+</style>
+</head>
+<body class="bg-topglow">
+
+<header class="nav" id="site-nav">
+  <div class="wrap nav__bar">
+    <a class="nav__logo" href="#top" aria-label="Strudel Studio: home"><span class="mark" data-mark="stack" aria-hidden="true"></span>Strudel Studio</a>
+    <nav class="nav__links" aria-label="Main">
+      <div class="nav__item">
+        <a class="nav__link" href="#features">Features <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="nav__menu">
+          <div class="wrap grid">
+            <div class="menu-col span-4"><p class="t-label">Strudel Studio</p><a href="#features">Blocks &amp; the timeline<span>click a block, get a layer</span></a><a href="#recorder">The take recorder<span>scrub to any second, replay it</span></a><a href="#library">Instrument Library<span>125 GM fonts + VCSL</span></a></div>
+            <div class="menu-col span-4"><p class="t-label">The community</p><a href="https://strudel.cc">strudel.cc<span>the live-coding language</span></a><a href="https://codeberg.org/uzu/strudel">Strudel source<span>the engine, on Codeberg</span></a><a href="https://github.com/r3naldocreates/strudel-studio">This repo<span>Strudel Studio itself</span></a></div>
+            <div class="menu-col span-4"><p class="t-label">Start here</p><a href="./demo/">Try the browser demo<span>press Play, click a block</span></a><a href="https://github.com/r3naldocreates/strudel-studio/releases/latest">Download for Windows<span>~11 MB, WebView2</span></a></div>
+          </div>
+        </div>
+      </div>
+      <div class="nav__item"><a class="nav__link" href="#download">Download</a></div>
+      <div class="nav__item"><a class="nav__link" href="#roadmap">Roadmap</a></div>
+      <div class="nav__item"><a class="nav__link" href="#faq">FAQ</a></div>
+    </nav>
+    <div class="nav__actions">
+      <a class="nav__link" href="https://github.com/r3naldocreates/strudel-studio" aria-label="Strudel Studio on GitHub"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.9 5.4.9 11.7c0 5 3.2 9.2 7.7 10.7.6.1.8-.2.8-.6v-2c-3.1.7-3.8-1.3-3.8-1.3-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 1.7 2.6 1.2 3.2.9.1-.7.4-1.2.7-1.5-2.5-.3-5.1-1.2-5.1-5.5 0-1.2.4-2.2 1.1-3-.1-.3-.5-1.4.1-3 0 0 .9-.3 3 1.2a10.4 10.4 0 0 1 5.4 0C16.1 6.7 17 7 17.9 7.3c.6 1.6.2 2.7.1 3 .7.8 1.1 1.8 1.1 3 0 4.3-2.6 5.2-5.1 5.5.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6a11.2 11.2 0 0 0 7.7-10.7C23.1 5.4 18.3.5 12 .5z"/></svg></a>
+      <a class="btn btn--primary" href="./demo/">Try it in your browser</a>
+    </div>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menu"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- 1 · hero (dealt: split) -->
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <p class="hero__kicker"><span class="dot" aria-hidden="true"></span>Free &amp; open source · AGPL-3.0 · Windows</p>
+        <h1 id="hero-h">Live-code music without writing code</h1>
+        <p class="hero__lead">Strudel Studio wraps <a href="https://strudel.cc">Strudel</a>, the live-coding music language, in a DAW you drive with clicks. Blocks, faders, an LFO, a take recorder. Every knob writes real Strudel code you can read, copy, or hand to strudel.cc.</p>
+        <div class="btn-row"><a class="btn btn--primary" href="./demo/">Try it in your browser</a><a class="btn btn--secondary" href="#download">Download for Windows</a></div>
+        <p class="hero__meta">Windows 10/11 · WebView2 · <b>100% offline after install</b> · ~11 MB</p>
+      </div>
+      <div class="hero__media span-6 start-7">
+        <img src="images/app-hero.jpg" alt="Strudel Studio playing Breakcore Chop: generated strudel code on the left, three mixer strips with faders and LFOs below the timeline" fetchpriority="high" style="--ly-pos: 16% 40%">
+        <div class="ly-float"><div class="ly-float__row"><span class="ly-live" aria-hidden="true"></span><span>Live</span></div><div class="ly-float__title">100% offline · bundled uzu-drumkit</div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- 2 · how it works -->
+  <section class="section" id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="section-head"><h2 id="how-h">The Studio in four moves <span class="muted">click, play, shape, record.</span></h2></div>
+      <div class="how-visual"><img src="images/app-live.jpg" alt="Strudel Studio editor with fired tokens highlighted in magenta and a live oscilloscope below" loading="lazy" decoding="async"></div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9l9.5 3.4L13.2 14l2.6 4.8-2 .8-2.5-4.8-4.6 4.6z"/></svg></div>
+          <span class="step-num">01 / CLICK</span>
+          <h3>Click a block</h3>
+          <p>Four on the floor, an acid line, a supersaw lead; every click adds a real layer to the timeline.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="7 5 19 12 7 19 7 5" stroke-linejoin="round"/></svg></div>
+          <span class="step-num">02 / PLAY</span>
+          <h3>Press Play</h3>
+          <p>The engine hot-swaps live while the music runs. Mute, solo, or drag a fader; the code writes itself as you perform.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2" fill="#14161a"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="#14161a"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="7" cy="17" r="2" fill="#14161a"/></svg></div>
+          <span class="step-num">03 / SHAPE</span>
+          <h3>Bend it with FX</h3>
+          <p>Low-pass, crush, delay, plus LFOs that breathe your cutoff or your gain. 125 GM instruments one click away.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg></div>
+          <span class="step-num">04 / RECORD</span>
+          <h3>Hit REC</h3>
+          <p>The recorder logs what you do: a mute at bar 8, a gain sweep, a layer at 0:37; then replays your session exactly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · features — two screens: header + editor row / instrument row -->
+  <section class="section" id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="section-head"><h2 id="features-h">The console for Strudel <span class="muted">every control writes the code for you.</span></h2></div>
+        <div class="bento">
+          <div class="tile tile--wide">
+            <div class="tile__text"><h3>Code that writes itself, lighting up as it plays</h3><p>The editor shows real, valid Strudel, regenerated on every click. Fired tokens glow inline so you can see which note is speaking.</p></div>
+            <div class="tile__media"><img src="images/app-live.jpg" alt="Strudel Studio editor with fired tokens highlighted in magenta and a live oscilloscope below" loading="lazy" decoding="async"></div>
+          </div>
+          <div class="tile tile--narrow" id="recorder">
+            <div class="tile__text"><h3>The take recorder</h3><p>Not audio capture: a <em>session</em> record. One event per thing you did, coalesced, scrubbed to any second. <code>R</code> arms it.</p></div>
+            <div class="tile__media"><img src="images/app-recorder.jpg" alt="The Strudel Studio recorder: BPM, Break, Rumble and Siren lanes with event blocks at 0:44, 0:53 and 1:01" loading="lazy" decoding="async"></div>
+          </div>
+        </div>
+        <div class="bento bento--lower">
+          <div class="tile tile--half" id="library">
+            <div class="tile__text"><h3>Instrument Library</h3><p>125 General MIDI soundfonts and the VCSL orchestral world: Steinway, tenor sax, marimba. Search, star, click, the font streams on first play.</p></div>
+            <div class="tile__media"><img src="images/app-library.jpg" alt="The Instrument Library: GM families with instrument counts and a search box" loading="lazy" decoding="async"></div>
+          </div>
+          <div class="tile tile--half">
+            <div class="tile__text"><h3>Mini-notation cheat sheet</h3><p>The full <a href="https://strudel.cc/learn/mini-notation/">mini-notation</a> set, grouped. Brackets, Euclid, randomness. Star any row to pin it, or add your own. Click a row, it lands in your pattern.</p></div>
+            <div class="tile__media"><img src="images/app-cheatsheet.jpg" alt="The grouped mini-notation cheat sheet with starred favourites" loading="lazy" decoding="async"></div>
+          </div>
+        </div>
+    </div>
+  </section>
+
+  <!-- 4 · the dealt inverse band — Powered by Strudel -->
+  <section class="band" id="powered-by-strudel" aria-labelledby="pb-h">
+    <div class="wrap band-inner">
+      <p class="band-mock" aria-label="Example strudel code: three notes in a piano soundfont"><span class="cmt">//</span> <span class="tok">$:</span> <span class="tok2">note</span>(<span class="tok3">"c3 eb3 g3"</span>).<span class="tok2">sound</span>(<span class="tok3">"gm_piano"</span>)</p>
+      <p class="t-label">Powered by Strudel</p>
+      <h2 id="pb-h" class="visually-hidden">Everything here is for the Strudel community</h2>
+      <p class="statement" id="statement">Strudel Studio is a <span class="w">console</span> for <span class="w">Strudel</span>, the live-coding environment built by <span class="w">Felix Roos</span> and the <span class="w">Strudel community</span>. Wrapped, not rewritten. Released <span class="w">open</span>, under the <span class="w">same AGPL-3.0</span>, <span class="w">for the community</span>.</p>
+      <p class="band-credit">The scheduler, the pattern language, the soundfonts and every synthesis decision are <b>the real @strudel/* engine</b>, embedded unmodified. Every contribution here (a preset, a block, a cheat sheet) is made to be used, studied and extended by the community that built the engine. <b>This project exists because of Strudel, and it is for Strudel.</b></p>
+      <img class="band-thumb" src="images/app-hero.jpg" alt="The Strudel Studio window running the engine, code glowing as it plays" loading="lazy" decoding="async">
+      <div class="band-links">
+        <a href="https://strudel.cc">Visit strudel.cc →</a>
+        <a href="https://codeberg.org/uzu/strudel">Strudel source on Codeberg →</a>
+        <a href="https://github.com/r3naldocreates/strudel-studio/blob/main/LICENSE">AGPL-3.0 license →</a>
+      </div>
+      <p class="band-note">GO MAKE MUSIC · THE INSTRUMENT IS THEIRS</p>
+    </div>
+  </section>
+
+  <!-- 5 · download -->
+  <section class="section" id="download" aria-labelledby="download-h">
+    <div class="wrap">
+      <div class="section-head"><h2 id="download-h">The Strudel Studio download <span class="muted">three ways, one machine.</span></h2></div>
+      <div class="dl-visual"><img src="images/app-cheatsheet.jpg" alt="The Strudel Studio mini-notation cheat sheet, grouped by topic with starred favourites" loading="lazy" decoding="async"></div>
+      <div class="download-grid">
+        <a class="dl-card recommended" href="https://github.com/r3naldocreates/strudel-studio/releases/latest">
+          <span class="dl-tag">Recommended · Windows</span>
+          <h3>Windows app</h3>
+          <p>Instant download, no build tools. Requires WebView2, preinstalled on Windows 11.</p>
+          <span class="dl-cta">Get the latest release →</span>
+        </a>
+        <a class="dl-card" href="./demo/">
+          <span class="dl-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M3 12h18"/></svg></span>
+          <span class="dl-tag">Zero install</span>
+          <h3>Browser demo</h3>
+          <p>The full app, right here. Press Play, click blocks, hit REC; everything works in the browser.</p>
+          <span class="dl-cta">Open the demo →</span>
+        </a>
+        <div class="dl-card">
+          <span class="dl-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></span>
+          <span class="dl-tag">From source</span>
+          <h3>Build it yourself</h3>
+          <p>Windows + Node 18+ + Rust 1.77+ MSVC.<br><code>git clone</code> → <code>npm install</code> → <code>npm run tauri build</code></p>
+          <a class="dl-cta" href="https://github.com/r3naldocreates/strudel-studio#quick-start">Setup guide →</a>
+        </div>
+      </div>
+      <p class="t-small" style="color:var(--p-muted);margin-top:16px">No telemetry or tracking. Built from public source; audit it, or build it yourself.</p>
+    </div>
+  </section>
+
+  <!-- 6 · roadmap -->
+  <section class="section" id="roadmap" aria-labelledby="roadmap-h">
+    <div class="wrap">
+      <div class="section-head"><h2 id="roadmap-h">What ships next <span class="muted">the Strudel Studio roadmap.</span></h2></div>
+      <div class="road-visual"><img src="images/app-recorder.jpg" alt="The Strudel Studio take recorder: lanes per layer, event blocks at 0:44, 0:53 and 1:01" loading="lazy" decoding="async"></div>
+      <div class="road-grid">
+        <div class="road-item"><span>Next</span><b>Piano-roll &amp; step sequencer</b></div>
+        <div class="road-item"><span>Next</span><b>Velocity lanes &amp; per-track swing</b></div>
+        <div class="road-item"><span>Next</span><b>ADSR envelopes per layer</b></div>
+        <div class="road-item"><span>Next</span><b>More bundled kits: 808, 909, Dirt</b></div>
+        <div class="road-item"><span>Planned</span><b>MIDI import &amp; live input</b></div>
+        <div class="road-item"><span>Planned</span><b>Sidechain ducking with duck()</b></div>
+        <div class="road-item"><span>Planned</span><b>Arrangement clips &amp; sections</b></div>
+        <div class="road-item"><span>Planned</span><b>bank()-prefixed sample registration</b></div>
+        <div class="road-item"><span>Planned</span><b>Multi-orbit FX mixing</b></div>
+        <div class="road-item"><span>Planned</span><b>Automation curves for any FX</b></div>
+        <div class="road-item"><span>Planned</span><b>Instrument library expansion</b></div>
+        <div class="road-item"><span>Planned</span><b>Mac &amp; Linux builds</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · faq -->
+  <section class="section" id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <div class="section-head" style="margin-bottom:28px"><h2 id="faq-h">The FAQ <span class="muted">answered straight.</span></h2></div>
+      <div class="qa-mock" role="img" aria-label="Example strudel code: dollar-colon, note of three notes"><span class="cmt">//</span> <span class="tok">$:</span> <span class="tok2">note</span>(<span class="tok3">"c3 eb3"</span>)</div>
+      <div class="qa">
+        <details><summary>Is it actually free?</summary><div class="qa-a">Yes. AGPL-3.0, forever. Commercial use included; if you distribute a modified build, the corresponding source must travel with it, exactly like Strudel itself.</div></details>
+        <details><summary>Does it work offline?</summary><div class="qa-a">The engine and the bundled uzu-drumkit (~2.5 MB) are fully baked in. Instrument downloads (GM soundfonts, VCSL) stream once, then the browser caches them. Your own sample folder: point at it, everything stays on your disk.</div></details>
+        <details><summary>Does it phone home?</summary><div class="qa-a">Nothing is sent anywhere. The app does nothing on the network beyond the sounds you explicitly ask for, and your browser handles the rest.</div></details>
+        <details><summary>What is Strudel, and why this wrapper?</summary><div class="qa-a">Strudel is a live-coding environment: you write patterns like <code>note("c3 eb3 g3").sound("gm_piano")</code> and music happens. It is also a wall of text for a first-time visitor. Renaldo wanted the music part. This is the result. See <a href="https://strudel.cc">strudel.cc</a>; learn the language, then come back when your hands are full of faders.</div></details>
+        <details><summary>Why is muting a comment in the code?</summary><div class="qa-a">Because Strudel has no per-pattern mute; the honest silence is <code>//</code> in front of the <code>$:</code> line, and the GUI shows it exactly that way. Nothing is hidden from the code you see.</div></details>
+        <details><summary>Mac and Linux?</summary><div class="qa-a">Windows first (that is the machine this was built on). The stack is portable: Tauri runs on macOS and Linux, the engine is browser JS, and the repo is open. PRs welcome.</div></details>
+        <details><summary>Something broke. Where do I report it?</summary><div class="qa-a">Issues on the repo: <a href="https://github.com/r3naldocreates/strudel-studio/issues">github.com/r3naldocreates/strudel-studio/issues</a>. A short note with what you did, what you expected, and a screenshot is plenty.</div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · close (dealt: close-type) -->
+  <section class="closing" aria-labelledby="close-h">
+    <div class="wrap closing__cta close--type">
+      <div class="section-head"><h2 id="close-h">Start playing Strudel <span class="muted">your first groove in the next minute.</span></h2></div>
+      <p class="closing__line">The demo runs in this tab. Press Play, click one block, hit REC. If you can use a mouse, you can play this.</p>
+      <div class="close-mock" role="img" aria-label="Example strudel bass line with a low-pass filter and gain"><span class="cmt">// ╌╌ [track:bass] Bass</span><br><span class="cmt">$:</span> <span class="tok2">note</span>(<span class="tok3">"c2 ~ eb2 ~ g2 ~"</span>).<span class="tok2">sound</span>(<span class="tok3">"square"</span>).<span class="tok2">lpf</span>(<span class="tok">750</span>).<span class="tok2">gain</span>(<span class="tok">.65</span>)<br><span class="cmt">$:</span> <span class="tok2">sound</span>(<span class="tok3">"bd*4, ~ hh*2"</span>).<span class="tok2">gain</span>(<span class="tok">.9</span>)<br><span class="cmt">$:</span> <span class="tok2">note</span>(<span class="tok3">"&lt;c3 eb3 g3&gt;*2"</span>).<span class="tok2">sound</span>(<span class="tok3">"sawtooth"</span>).<span class="tok2">gain</span>(<span class="tok">.35</span>)</div>
+      <a class="btn btn--primary" href="./demo/">Try it in your browser<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+      <p class="closing__links"><a href="https://strudel.cc">strudel.cc</a><span aria-hidden="true">·</span><a href="https://codeberg.org/uzu/strudel">Strudel source</a><span aria-hidden="true">·</span><a href="https://github.com/r3naldocreates/strudel-studio">This repo</a></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- 9 · footer (dealt: footer-statement) -->
+<footer class="footer closing footer--statement" id="footer">
+  <div class="wrap">
+    <div class="closing__call">
+      <p class="wordmark-big" aria-hidden="true">Strudel Studio</p>
+      <div class="grid footer__grid" style="margin-top:20px">
+        <div class="span-6 stack-5 footer__col">
+          <a class="nav__logo" href="#top" style="color:#18191b"><span class="mark" data-mark="stack" aria-hidden="true"></span>Strudel Studio</a>
+          <p class="footer__lede">A click-to-compose studio for Strudel. Free, AGPL-3.0, for the community.</p>
+        </div>
+        <div class="span-3 start-7 footer__col"><h4>Download</h4><ul><li><a href="https://github.com/r3naldocreates/strudel-studio/releases/latest">Windows release</a></li><li><a href="./demo/">Browser demo</a></li><li><a href="https://github.com/r3naldocreates/strudel-studio#quick-start">Build from source</a></li></ul></div>
+        <div class="span-3 footer__col"><h4>Community</h4><ul><li><a href="https://strudel.cc">strudel.cc</a></li><li><a href="https://codeberg.org/uzu/strudel">Strudel source</a></li><li><a href="https://github.com/r3naldocreates/strudel-studio">This repo</a></li></ul></div>
+      </div>
+      <p class="colophon">Made with open tools, Host Grotesk + JetBrains Mono on an Ubuntu + Windows bench. No trackers on this page either.</p>
+    </div>
+
+    <div class="footer__legal">
+      <span>© 2026 Renaldo Goosen · AGPL-3.0 · Set in Host Grotesk + JetBrains Mono · Built with Tauri + CodeMirror</span>
+      <span>Strudel is the work of Felix Roos and contributors · No warranty; just grooves.</span>
+      <!-- ★ Buy Me a Coffee, right edge. TODO (after publishing): swap the href for your real page,
+     e.g. https://www.buymeacoffee.com/<username>. The account is a post-launch step; the link works today. -->
+<a class="support-btn" href="https://www.buymeacoffee.com/" rel="noopener">☕ Buy me a coffee</a>
+    </div>
+  </div>
+</footer>
+
+
+
+<script type="module" src="assets/system.js"></script>
+<script>
+</script>
+</body>
+</html>

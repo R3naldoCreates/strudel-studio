@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/ui/additives.css" />
+    <link rel="stylesheet" href="/src/ui/widgets.css" />
+    <link rel="stylesheet" href="/src/ui/deck.css" />
+    <title>Strudel Studio — Click-to-compose live music</title>
+  </head>
+  <body>
+    <div id="app">
+      <!-- top bar -->
+      <header id="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="26" height="26"><g fill="none" stroke-linecap="round" stroke-width="2.6"><path d="M4 16h3.4l2.2-6.5 3.4 13 3-9.5 2.4 3h4l2.8-8.5 3.4 11.5 2.2-4.5h3.2" stroke="url(#g1)"/></g><defs><linearGradient id="g1" x1="0" y1="0" x2="32" y2="0"><stop stop-color="#35e0ff"/><stop offset=".5" stop-color="#ff3ea5"/><stop offset="1" stop-color="#b6ff3b"/></linearGradient></defs></svg>
+          </div>
+          <div>
+            <div class="brand-name">Strudel <b>Studio</b></div>
+            <div class="brand-sub">click-to-compose · offline · AGPL</div>
+          </div>
+        </div>
+
+        <div class="transport">
+          <button id="btn-play" class="play-btn" title="Play / stop (Ctrl+Enter)">
+            <svg id="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+            <svg id="icon-stop" viewBox="0 0 24 24" width="18" height="18" style="display:none"><rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"/></svg>
+          </button>
+          <div class="bpm-ctl">
+            <label for="bpm-range">BPM</label>
+            <input id="bpm-range" type="range" min="60" max="200" step="1" value="132" />
+            <input id="bpm-num" type="number" min="20" max="300" step="1" value="132" />
+          </div>
+          <button id="btn-hush" class="hud-btn danger" title="Silence everything immediately (hush)">HUSH</button>
+          <button id="btn-rec" class="rec-btn" aria-pressed="false" title="Open the Performance Deck and record what you play">
+            <span class="rec-dot" aria-hidden="true"></span><span class="rec-label">REC</span>
+          </button>
+          <span class="history-group">
+            <button id="btn-undo" class="hud-btn icon-btn" title="Undo (Ctrl+Z)" aria-label="Undo">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+            </button>
+            <button id="btn-redo" class="hud-btn icon-btn" title="Redo (Ctrl+Shift+Z / Ctrl+Y)" aria-label="Redo">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg>
+            </button>
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <button id="btn-open" class="hud-btn" title="Open a .strudel.json song">Open</button>
+          <button id="btn-save" class="hud-btn" title="Save song as .strudel.json">Save</button>
+          <button id="btn-folder" class="hud-btn" title="Set folder scanned for your own samples (.wav/.mp3/.ogg/.flac)">Sample Folder</button>
+          <input id="folder-path" class="folder-path" spellcheck="false" placeholder="…no custom sample folder set" hidden />
+        </div>
+      </header>
+
+      <!-- left sidebar : blocks palette -->
+      <aside id="leftbar" class="sidebar">
+        <div class="side-head">
+          <span class="side-title">Blocks</span>
+          <span class="side-hint">click to add a layer</span>
+        </div>
+        <div id="blocks-panel" class="side-scroll"></div>
+      </aside>
+
+      <!-- center : code editor -->
+      <main id="editor-wrap">
+        <div id="editor-toolbar">
+          <span class="ed-title">song.strudel</span>
+          <span id="eval-status" class="eval-status">ready</span>
+          <span class="spacer"></span>
+          <button id="btn-copy" class="mini-btn" title="Copy generated code to clipboard">Copy code</button>
+          <button id="btn-format" class="mini-btn" title="Regenerate code from the song model">Regenerate</button>
+        </div>
+        <div id="widget-bar" hidden></div>
+        <div id="editor"></div>
+        <div id="mini-hint" class="mini-hint">
+          <span><b>mini-notation</b>:</span>
+          <code>bd sd hh</code> sequence · <code>a*3</code> triplets · <code>[a b]</code> squeeze ·
+          <code>&lt;a b&gt;</code> alternate · <code>(3,8)</code> euclid · <code>~</code> rest ·
+          <code>slider(v,min,max)</code> live knob · <b>Ctrl+Enter</b> applies edits
+        </div>
+      </main>
+
+      <!-- right sidebar : inspector -->
+      <aside id="rightbar" class="sidebar">
+        <div class="side-head">
+          <span class="side-title">Inspector</span>
+          <span id="inspector-context" class="side-hint">nothing selected</span>
+        </div>
+        <div id="inspector-panel" class="side-scroll"></div>
+      </aside>
+
+      <!-- bottom : scope + timeline -->
+      <section id="bottom">
+        <div id="rec-bar" hidden><span class="rec-bar-dot" aria-hidden="true"></span><span>REC — everything the engine plays is being captured —</span></div>
+        <div id="scope-wrap">
+          <canvas id="scope"></canvas>
+          <div id="scope-overlay">
+            <button id="scope-mode-time" class="scope-toggle active">WAVE</button>
+            <button id="scope-mode-freq" class="scope-toggle">SPECTRUM</button>
+          </div>
+        </div>
+        <div id="timeline">
+          <div id="strips"></div>
+          <button id="add-track-strip" class="add-strip" title="Add a new layer (opens block library)">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>Add layer</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- floating context menu -->
+      <div id="ctx-menu" class="ctx-menu" hidden></div>
+      <!-- toasts -->
+      <div id="toasts" class="toasts"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

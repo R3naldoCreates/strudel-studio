@@ -1,0 +1,61 @@
+
+/* ─── Live "now playing" highlighting (strudel.cc-style box highlight) ─────── */
+.cm-playing {
+  background: rgba(255, 62, 165, 0.30);
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1.5px rgba(255, 62, 165, 0.65),
+    0 0 14px rgba(255, 62, 165, 0.40);
+  outline: none;
+  animation: cm-playing-pulse 0.24s ease-out;
+}
+@keyframes cm-playing-pulse {
+  0% { background: rgba(255, 62, 165, 0.55); }
+  100% { background: rgba(255, 62, 165, 0.30); }
+}
+
+/* strips pulse when their layer fires */
+.strip { position: relative; }
+.strip.triggered {
+  border-color: var(--strip-color) !important;
+  box-shadow:
+    0 0 0 1px var(--strip-color),
+    0 0 18px color-mix(in srgb, var(--strip-color) 55%, transparent),
+    0 2px 12px rgba(0,0,0,0.4) !important;
+}
+.strip.triggered .strip-tab {
+  box-shadow: 0 0 10px var(--strip-color);
+}
+
+/* ─── Live slider widget bar (strudel slider() calls) ──────────────────────── */
+#widget-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: linear-gradient(180deg, rgba(255, 209, 102, 0.07), transparent);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+#widget-bar[hidden] { display: none; }
+#widget-bar::-webkit-scrollbar { height: 5px; }
+#widget-bar::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+.widget-bar-label {
+  font-family: var(--mono); font-size: 8px; font-weight: 800; letter-spacing: 0.14em;
+  color: var(--amber); flex: 0 0 auto; user-select: none;
+}
+
+.widget { display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+.widget-name {
+  font-family: var(--mono); font-size: 8.5px; color: var(--amber);
+  max-width: 110px; overflow: hidden; text-overflow: ellipsis;
+}
+.widget-slider { width: 110px; accent-color: var(--amber); cursor: ew-resize; }
+.widget-value {
+  font-family: var(--mono); font-size: 9px; color: var(--text);
+  background: var(--panel-3); border: 1px solid var(--border-bright);
+  padding: 1px 6px; border-radius: 4px; min-width: 38px; text-align: right;
+}

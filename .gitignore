@@ -1,0 +1,12 @@
+# dependencies / builds
+node_modules/
+dist/
+src-tauri/target/
+*.log
+
+# taste-skill / local scratch
+.taste-skill/
+
+# OS
+Thumbs.db
+.DS_Store
