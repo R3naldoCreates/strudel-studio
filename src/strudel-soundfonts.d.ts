@@ -1,6 +1,6 @@
-// Type stub for @strudel/soundfonts (ships no .d.ts)
-declare module '@strudel/soundfonts' {
-  /** Registers every gm_* instrument with superdough. Soundfonts themselves are
-   *  fetched lazily from the web on first use (felixroos.github.io/webaudiofontdata). */
-  export function registerSoundfonts(): void;
+// Type stub for the @strudel/soundfonts data module (ships no .d.ts)
+declare module '@strudel/soundfonts/gm.mjs' {
+  /** gm instrument name → list of font files (felixroos webaudiofontdata ids) */
+  const gm: Record<string, string[]>;
+  export default gm;
 }

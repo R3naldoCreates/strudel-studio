@@ -278,6 +278,37 @@ class Store {
     this.bumpRevision();
   }
 
+  /**
+   * Paste-import: append ready-made tracks + bake sample banks into the song.
+   * One undo entry for the whole import. Returns how many layers were added.
+   */
+  importTracks(tracks: Track[], extraCalls: string[]): number {
+    const room = Math.max(0, 12 - this.state.song.tracks.length);
+    const adding = tracks.slice(0, room);
+    if (adding.length === 0 && extraCalls.length === 0) return 0;
+    this.pushUndo();
+    const s = this.state.song;
+    const before = JSON.parse(JSON.stringify(s)) as Song;
+    const calls = [...(s.extraSampleCalls ?? [])];
+    for (const c of extraCalls) {
+      if (/^samples\s*\(/.test(c) && !/[\r\n]/.test(c) && c.length <= 600 && !calls.includes(c)) calls.push(c);
+    }
+    this.state.song = { ...s, tracks: [...s.tracks, ...adding], extraSampleCalls: calls };
+    this.state.selection = adding.length
+      ? { kind: 'track', trackId: adding[0].id }
+      : this.state.selection;
+    this.logEvent({
+      kind: 'song-load',
+      trackId: null,
+      before,
+      after: JSON.parse(JSON.stringify(this.state.song)),
+      label: `import +${adding.length} layer${adding.length === 1 ? '' : 's'}`,
+      t: 0,
+    });
+    this.touch();
+    return adding.length;
+  }
+
   /** Bump revision so the editor regenerates its code (no undo entry). */
   bumpRevision(): void {
     this.state.revision += 1;

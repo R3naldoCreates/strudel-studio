@@ -28,6 +28,10 @@ export function generate(song: Song): GeneratedCode {
 
   // header
   push(`setcpm(${formatNumber(song.bpm)})\n`);
+  // sample banks pasted in as imports — registered before anything plays
+  for (const call of song.extraSampleCalls ?? []) {
+    if (/^samples\s*\(/.test(call) && !/[\r\n]/.test(call) && call.length <= 600) push(`${call}\n`);
+  }
 
   const anySolo = song.tracks.some((t) => t.solo);
 

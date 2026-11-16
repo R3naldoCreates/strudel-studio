@@ -7,6 +7,8 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 
 import type { CodeSpan } from '../types';
 import { spanAt } from '../codegen';
+import { looksLikeStrudel } from '../importPattern';
+import { openImportDialog } from './importDialog';
 
 const strudelName = (token: string): string | null => {
   // rough keyword table — strudel has hundreds of fns; anything word-call shaped
@@ -182,6 +184,22 @@ export function createEditor(
           };
           window.addEventListener('mouseup', up);
           return false;
+        },
+        paste(event, view) {
+          const text = event.clipboardData?.getData('text') ?? '';
+          if (!text || !looksLikeStrudel(text)) return false;
+          event.preventDefault();
+          openImportDialog(text, {
+            onPasteAsIs: () => {
+              const range = view.state.selection.main;
+              view.dispatch({
+                changes: { from: range.from, to: range.to, insert: text },
+                selection: { anchor: range.from + text.length },
+                userEvent: 'input.paste',
+              });
+            },
+          });
+          return true;
         },
         contextmenu(event) {
           event.preventDefault();

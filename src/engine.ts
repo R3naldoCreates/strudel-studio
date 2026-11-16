@@ -6,6 +6,7 @@ import {
   evaluate as strudelEvaluate,
   hush,
   samples,
+  aliasBank,
   getAudioContext,
   getAnalyserById,
   getAnalyzerData,
@@ -14,7 +15,7 @@ import {
   getTime,
   superdough,
 } from '@strudel/web';
-import { registerSoundfonts } from '@strudel/soundfonts';
+import { registerGMInstruments } from './soundfonts';
 
 let initPromise: Promise<void> | null = null;
 let samplesPromise: Promise<void> | null = null;
@@ -52,14 +53,19 @@ export async function initEngine(): Promise<void> {
   initPromise = (async () => {
     // initStrudel must run inside a user gesture (it creates/resumes AudioContext)
     await initStrudel();
-    // GM soundfonts (125 instruments) — registered here; each font is fetched
-    // from the web the first time it's played. Registration itself is offline-safe.
+    // GM soundfonts (125 instruments) — registered into the engine's OWN sound
+    // map (via @strudel/web primitives, see soundfonts.ts); each font streams
+    // from the webaudiofontdata CDN on first play.
     try {
-      registerSoundfonts();
+      registerGMInstruments();
     } catch (err) {
       console.warn('[engine] soundfont registration failed (online playback of gm_* will not work)', err);
     }
-    samplesPromise = loadBundledSamples();
+    samplesPromise = Promise.all([loadBundledSamples(), loadRemotePacks()]).then(([, failed]) => {
+      if (failed.length) {
+        console.warn('[engine] instrument packs unavailable (needs internet):', failed);
+      }
+    });
     listenToLog();
   })();
   return initPromise;
@@ -71,6 +77,128 @@ async function loadBundledSamples(): Promise<void> {
   } catch (err) {
     console.warn('[engine] bundled sample pack failed to load', err);
     lastError = 'Failed to load bundled drum kit';
+  }
+}
+
+/**
+ * The packs strudel.cc prebakes by default — the banks Bakery examples assume.
+ * Every map registers by name only; the audio bytes download lazily on first
+ * play. Any failure is non-fatal (offline = those sounds stay silent).
+ */
+const DIRT_SAMPLES: Record<string, string[]> = {
+  casio: ['casio/high.wav', 'casio/low.wav', 'casio/noise.wav'],
+  crow: ['crow/000_crow.wav', 'crow/001_crow2.wav', 'crow/002_crow3.wav', 'crow/003_crow4.wav'],
+  insect: ['insect/000_everglades_conehead.wav', 'insect/001_robust_shieldback.wav', 'insect/002_seashore_meadow_katydid.wav'],
+  wind: [
+    'wind/000_wind1.wav', 'wind/001_wind10.wav', 'wind/002_wind2.wav', 'wind/003_wind3.wav', 'wind/004_wind4.wav',
+    'wind/005_wind5.wav', 'wind/006_wind6.wav', 'wind/007_wind7.wav', 'wind/008_wind8.wav', 'wind/009_wind9.wav',
+  ],
+  jazz: [
+    'jazz/000_BD.wav', 'jazz/001_CB.wav', 'jazz/002_FX.wav', 'jazz/003_HH.wav', 'jazz/004_OH.wav',
+    'jazz/005_P1.wav', 'jazz/006_P2.wav', 'jazz/007_SN.wav',
+  ],
+  metal: [
+    'metal/000_0.wav', 'metal/001_1.wav', 'metal/002_2.wav', 'metal/003_3.wav', 'metal/004_4.wav',
+    'metal/005_5.wav', 'metal/006_6.wav', 'metal/007_7.wav', 'metal/008_8.wav', 'metal/009_9.wav',
+  ],
+  east: [
+    'east/000_nipon_wood_block.wav', 'east/001_ohkawa_mute.wav', 'east/002_ohkawa_open.wav', 'east/003_shime_hi.wav',
+    'east/004_shime_hi_2.wav', 'east/005_shime_mute.wav', 'east/006_taiko_1.wav', 'east/007_taiko_2.wav', 'east/008_taiko_3.wav',
+  ],
+  space: [
+    'space/000_0.wav', 'space/001_1.wav', 'space/002_11.wav', 'space/003_12.wav', 'space/004_13.wav', 'space/005_14.wav',
+    'space/006_15.wav', 'space/007_16.wav', 'space/008_17.wav', 'space/009_18.wav', 'space/010_2.wav', 'space/011_3.wav',
+    'space/012_4.wav', 'space/013_5.wav', 'space/014_6.wav', 'space/015_7.wav', 'space/016_8.wav', 'space/017_9.wav',
+  ],
+  numbers: [
+    'numbers/0.wav', 'numbers/1.wav', 'numbers/2.wav', 'numbers/3.wav', 'numbers/4.wav',
+    'numbers/5.wav', 'numbers/6.wav', 'numbers/7.wav', 'numbers/8.wav',
+  ],
+  num: [
+    'num/00.wav', 'num/01.wav', 'num/02.wav', 'num/03.wav', 'num/04.wav', 'num/05.wav', 'num/06.wav', 'num/07.wav', 'num/08.wav', 'num/09.wav',
+    'num/10.wav', 'num/11.wav', 'num/12.wav', 'num/13.wav', 'num/14.wav', 'num/15.wav', 'num/16.wav', 'num/17.wav', 'num/18.wav', 'num/19.wav', 'num/20.wav',
+  ],
+};
+
+const CDN = 'https://strudel.b-cdn.net';
+
+export interface PackInfo {
+  id: string;
+  label: string;
+  status: 'ok' | 'failed';
+}
+
+interface PackDef {
+  id: string;
+  label: string;
+  url?: string;
+  inline?: Record<string, string[]>;
+  base: string;
+  options?: { tag?: string };
+}
+
+const PACK_DEFS: PackDef[] = [
+  { id: 'uzu-wavetables', label: 'uzu-wavetables (synth wavetables)', url: `${CDN}/uzu-wavetables.json`, base: `${CDN}/uzu-wavetables/` },
+  { id: 'drum-machines', label: 'tidal-drum-machines (683 machine kits)', url: `${CDN}/tidal-drum-machines.json`, base: `${CDN}/tidal-drum-machines/machines/`, options: { tag: 'drum-machines' } },
+  { id: 'vcsl', label: 'VCSL (orchestral & world instruments)', url: `${CDN}/vcsl.json`, base: `${CDN}/VCSL/` },
+  { id: 'mridangam', label: 'mridangam', url: `${CDN}/mridangam.json`, base: `${CDN}/mrid/`, options: { tag: 'drum-machines' } },
+  { id: 'piano', label: 'Salamander grand piano', url: `${CDN}/piano.json`, base: `${CDN}/piano/` },
+  { id: 'dirt-samples', label: 'dirt-samples (classic drum & perc names)', inline: DIRT_SAMPLES, base: `${CDN}/Dirt-Samples/` },
+];
+
+/** registration outcome per pack — populated by loadRemotePacks() */
+const packStatus: Record<string, 'ok' | 'failed'> = {};
+
+/** register the remote banks; returns the ids of the ones that failed */
+async function loadRemotePacks(): Promise<string[]> {
+  await Promise.allSettled(
+    PACK_DEFS.map(async (pack) => {
+      try {
+        await samples(pack.inline ?? pack.url!, pack.base, { ...pack.options, prebake: true });
+        packStatus[pack.id] = 'ok';
+      } catch (err) {
+        console.warn(`[engine] pack ${pack.id} failed (needs internet)`, err);
+        packStatus[pack.id] = 'failed';
+      }
+    }),
+  );
+  try {
+    await aliasBank(`${CDN}/tidal-drum-machines-alias.json`);
+  } catch (err) {
+    console.warn('[engine] drum-machine alias map failed', err);
+    packStatus['drum-machines-alias'] = 'failed';
+  }
+  return PACK_DEFS.filter((p) => packStatus[p.id] === 'failed').map((p) => p.id);
+}
+
+/** packs that failed to register (offline at first play, blocked CDN, …) */
+export function remotePackFailures(): PackInfo[] {
+  return PACK_DEFS.filter((p) => packStatus[p.id] === 'failed').map((p) => ({
+    id: p.id,
+    label: p.label,
+    status: 'failed',
+  }));
+}
+
+/** re-attempt registration of one pack — used by the paste-import dialog */
+export async function retryRemotePack(id: string): Promise<boolean> {
+  const pack = PACK_DEFS.find((p) => p.id === id);
+  if (!pack) return false;
+  try {
+    await samples(pack.inline ?? pack.url!, pack.base, { ...pack.options, prebake: true });
+    packStatus[pack.id] = 'ok';
+    if (id === 'drum-machines') {
+      try {
+        await aliasBank(`${CDN}/tidal-drum-machines-alias.json`);
+        delete packStatus['drum-machines-alias'];
+      } catch {
+        packStatus['drum-machines-alias'] = 'failed';
+      }
+    }
+    return true;
+  } catch {
+    packStatus[pack.id] = 'failed';
+    return false;
   }
 }
 

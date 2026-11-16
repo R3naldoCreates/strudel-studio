@@ -62,6 +62,11 @@ export interface Song {
   name: string;
   bpm: number;
   tracks: Track[];
+  /**
+   * verbatim one-line samples(...) calls baked from pasted imports — emitted
+   * at the top of the generated code so the banks exist at play time.
+   */
+  extraSampleCalls?: string[];
 }
 
 export type SelectionKind =
