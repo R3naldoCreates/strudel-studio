@@ -36,6 +36,7 @@ strudel.cc itself.
   - **Mini-notation cheat sheet**: the complete notation set (docs-verified)
     organized into groups you can collapse, a **Commonly Used** main set,
     **★ favorites**, and your own custom rows you can add/delete.
+- **Paste a Bakery example - layers appear**: copy any strudel.cc `Bakery` snippet and paste it into the editor. Strudel Studio parses it, proposes the matching layers (drum statements verbatim, one synth layer per instrument, tempo from setcpm/setcps, sample banks baked into the song), lists the instruments it can't find with tickboxes to download, and either imports as layers or pastes as-is with one click.
 - **Center — Code, but legible**: the actual strudel code your song generates,
   with strudel syntax highlighting. **Fired tokens light up inline as they play**
   (strudel.cc-style box highlight), and playing layers pulse on the timeline.
