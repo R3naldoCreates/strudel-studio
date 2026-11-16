@@ -37,8 +37,15 @@
 <link rel="stylesheet" href="assets/ui/cards.css">
 <link rel="stylesheet" href="assets/backgrounds/backgrounds.css">
 <link rel="stylesheet" href="assets/layout/layout.css">
-<!-- Keep this <style> after the links: layout.css resets --ly-scale -->
 <style>
+/* ── tighter rhythm: sections size to content, not to one full screen ── */
+main > :is(section, .section), main > .band, footer.closing {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: clamp(48px, 7vh, 80px) 0;
+}
+main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
+
 :root {
   --p-bg: #18191b; --p-surface: #222427; --p-ink: #eff0f1; --p-muted: #c2c4c8;
   --p-accent: #ff4a1f; --p-accent-ink: #18191b; --p-action: #ff4a1f; --p-action-ink: #18191b;
