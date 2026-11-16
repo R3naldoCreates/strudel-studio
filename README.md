@@ -1,5 +1,11 @@
 # Strudel Studio
 
+[![Live at r3naldocreates.github.io](https://img.shields.io/badge/site-r3naldocreates.github.io%2Fstrudel--studio-ff4a1f?style=for-the-badge&logo=rocket&logoColor=white)](https://r3naldocreates.github.io/strudel-studio/)
+
+![Strudel Studio — the landing page](docs/images/site-hero.jpg)
+
+**→ [Open Strudel Studio — compose music without writing code](https://r3naldocreates.github.io/strudel-studio/)** · [Try it in your browser, no download](https://r3naldocreates.github.io/strudel-studio/demo/) · [Get the Windows release](https://github.com/R3naldoCreates/strudel-studio/releases/latest)
+
 **A click-to-compose desktop interface for [Strudel](https://strudel.cc), the
 live-coding music environment — fully offline, built in Rust + TypeScript.**
 
