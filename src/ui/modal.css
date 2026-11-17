@@ -1,0 +1,90 @@
+/* ─── In-app modals (native <dialog>) ────────────────────────────────────── */
+/* Scroll containment lives on the dialog + backdrop, never on html/body. */
+dialog.st-dialog {
+  width: min(440px, 92vw);
+  max-width: none;
+  max-height: min(86vh, 720px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: visible;
+  overscroll-behavior: contain;
+}
+dialog.st-dialog::backdrop {
+  background: rgba(4, 6, 12, 0.76);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.st-dialog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px 16px;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--border-bright);
+  border-radius: 14px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.62);
+}
+.st-dialog-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+.st-dialog-message { margin: 0; font-size: 12px; line-height: 1.6; color: var(--dim); }
+.st-dialog-detail {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--dimmer);
+  background: var(--panel-3);
+  border-radius: 8px;
+  padding: 9px 11px;
+}
+.st-dialog-label { font-size: 11px; font-weight: 650; color: var(--dim); }
+.st-dialog-input {
+  width: 100%;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border-bright);
+  border-radius: 8px;
+  padding: 9px 11px;
+}
+.st-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+.st-dialog-btn {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border-radius: 9px;
+  padding: 8px 15px;
+  cursor: pointer;
+  border: 1px solid var(--border-bright);
+  background: var(--panel-3);
+  color: var(--text);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), border-color 160ms, filter 160ms;
+}
+.st-dialog-btn:hover { filter: brightness(1.25); }
+.st-dialog-btn:active { transform: scale(0.97); }
+.st-dialog-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.st-dialog-confirm { background: var(--cyan); border-color: var(--cyan); color: #06131a; }
+.st-dialog-confirm.is-danger { background: var(--red); border-color: var(--red); color: #fff; }
+.st-dialog-cancel { color: var(--dim); }
+.st-dialog-cancel:hover { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .st-dialog-btn { transition-duration: 0ms; }
+}

@@ -52,6 +52,8 @@ export interface Track {
   muted: boolean;
   solo: boolean;
   orbit: number | null;
+  /** arrangement: stay silent for this many seconds before joining (Strudel mask gate) */
+  delaySeconds?: number;
   fx: FxEntry[];
   automation: Automation | null;
   color: string;
@@ -67,6 +69,14 @@ export interface Song {
    * at the top of the generated code so the banks exist at play time.
    */
   extraSampleCalls?: string[];
+  /**
+   * Full pasted Strudel source, kept verbatim so a shared Bakery/example
+   * snippet behaves exactly the same here as it does on strudel.cc.
+   * Safety choices were applied before this was stored.
+   */
+  extraCode?: string[];
+  /** human-readable record of anything the safety check removed */
+  omittedNotes?: string[];
 }
 
 export type SelectionKind =
@@ -122,6 +132,7 @@ export function makeTrack(kind: TrackKind, partial: Partial<Track>): Track {
     muted: partial.muted ?? false,
     solo: partial.solo ?? false,
     orbit: partial.orbit ?? null,
+    delaySeconds: partial.delaySeconds,
     fx: partial.fx ?? [],
     automation: partial.automation ?? null,
     color: partial.color ?? TRACK_COLORS[kind],

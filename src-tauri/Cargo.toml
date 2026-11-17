@@ -1,6 +1,6 @@
 [package]
 name = "strudel-studio"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 description = "Strudel Studio — a click-to-compose desktop interface for Strudel (offline, AGPL-3.0)"
 rust-version = "1.77"

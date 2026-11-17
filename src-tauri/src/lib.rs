@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use serde::Serialize;
 use tauri::Manager;
@@ -42,11 +42,16 @@ struct ScanResult {
 /// Layout convention: files in the root land in one bank named after the
 /// folder; each first-level subdirectory becomes its own bank.
 #[tauri::command]
-fn scan_samples(path: String) -> Result<ScanResult, String> {
+fn scan_samples(path: String, app: tauri::AppHandle) -> Result<ScanResult, String> {
     let root = PathBuf::from(&path);
     if !root.is_dir() {
         return Err(format!("not a directory: {path}"));
     }
+    // The webview only gets asset access to the folder the user actually
+    // chose — never to the whole disk (config assetProtocol.scope is minimal).
+    app.asset_protocol_scope()
+        .allow_directory(&root, true)
+        .map_err(|e| format!("grant asset access to {path}: {e}"))?;
 
     // bank name → sound entries (BTreeMap for deterministic order)
     let mut banks: BTreeMap<String, Vec<SoundInfo>> = BTreeMap::new();
@@ -152,17 +157,37 @@ fn dedupe(existing: &mut Vec<SoundInfo>, name: String) -> String {
     format!("{name}_dup")
 }
 
+/// Only song files may be read/written through IPC. A pasted snippet must
+/// never be able to use these commands as a general file read/write primitive.
+fn validate_song_path(path: &str) -> Result<PathBuf, String> {
+    let candidate = PathBuf::from(path);
+    if candidate.components().any(|c| matches!(c, Component::ParentDir)) {
+        return Err("path traversal is not allowed".into());
+    }
+    let ext = candidate
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    if ext != "json" {
+        return Err("only .json song files can be read or written".into());
+    }
+    Ok(candidate)
+}
+
 #[tauri::command]
 fn read_text_file(path: String) -> Result<String, String> {
-    fs::read_to_string(&path).map_err(|e| format!("read {path}: {e}"))
+    let path = validate_song_path(&path)?;
+    fs::read_to_string(&path).map_err(|e| format!("read {}: {e}", path.display()))
 }
 
 #[tauri::command]
 fn write_text_file(path: String, contents: String) -> Result<(), String> {
-    if let Some(parent) = Path::new(&path).parent() {
-        fs::create_dir_all(parent).map_err(|e| format!("create dir {parent:?}: {e}"))?;
+    let path = validate_song_path(&path)?;
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("create dir {:?}: {e}", parent))?;
     }
-    fs::write(&path, contents).map_err(|e| format!("write {path}: {e}"))
+    fs::write(&path, contents).map_err(|e| format!("write {}: {e}", path.display()))
 }
 
 /// Create (if missing) and return the app's own sample drop folder.

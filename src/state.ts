@@ -4,6 +4,7 @@ import { emptySong, makeTrack } from './types';
 import type { SampleBank } from './samples';
 import type { SessionEvent, SessionEventKind } from './recorder';
 import { paramLabel, makeEventId } from './recorder';
+import { isSafeSampleCall, omittedComment } from './codeSafety';
 
 // ── persistence ──────────────────────────────────────────────────────────────
 const SONG_KEY = 'strudel-studio.song.v1';
@@ -282,7 +283,7 @@ class Store {
    * Paste-import: append ready-made tracks + bake sample banks into the song.
    * One undo entry for the whole import. Returns how many layers were added.
    */
-  importTracks(tracks: Track[], extraCalls: string[]): number {
+  importTracks(tracks: Track[], extraCalls: string[], omitted: string[] = []): number {
     const room = Math.max(0, 12 - this.state.song.tracks.length);
     const adding = tracks.slice(0, room);
     if (adding.length === 0 && extraCalls.length === 0) return 0;
@@ -291,9 +292,14 @@ class Store {
     const before = JSON.parse(JSON.stringify(s)) as Song;
     const calls = [...(s.extraSampleCalls ?? [])];
     for (const c of extraCalls) {
-      if (/^samples\s*\(/.test(c) && !/[\r\n]/.test(c) && c.length <= 600 && !calls.includes(c)) calls.push(c);
+      if (isSafeSampleCall(c) && !calls.includes(c)) calls.push(c);
     }
-    this.state.song = { ...s, tracks: [...s.tracks, ...adding], extraSampleCalls: calls };
+    this.state.song = {
+      ...s,
+      tracks: [...s.tracks, ...adding],
+      extraSampleCalls: calls,
+      omittedNotes: [...(s.omittedNotes ?? []), ...omittedComment(omitted)],
+    };
     this.state.selection = adding.length
       ? { kind: 'track', trackId: adding[0].id }
       : this.state.selection;
@@ -307,6 +313,42 @@ class Store {
     });
     this.touch();
     return adding.length;
+  }
+
+  /**
+   * Import a full pasted snippet verbatim so it behaves exactly like the
+   * strudel.cc example it came from. Safety choices are already applied by
+   * the import dialog; omitted snippets are written into the song as notes.
+   */
+  importVerbatim(opts: {
+    code: string;
+    omitted: string[];
+    extraCalls: string[];
+    replace: boolean;
+  }): void {
+    this.pushUndo();
+    const base = opts.replace ? emptySong() : this.state.song;
+    const before = JSON.parse(JSON.stringify(base)) as Song;
+    const calls = [...(base.extraSampleCalls ?? [])];
+    for (const c of opts.extraCalls) {
+      if (isSafeSampleCall(c) && !calls.includes(c)) calls.push(c);
+    }
+    const lines = opts.code.split(/\r?\n/).filter((l) => l.trim().length > 0);
+    const song: Song = {
+      ...base,
+      extraSampleCalls: calls,
+      extraCode: [...(base.extraCode ?? []), ...lines],
+      omittedNotes: [...(base.omittedNotes ?? []), ...omittedComment(opts.omitted)],
+    };
+    this.state.song = song;
+    this.state.selection = { kind: 'none' };
+    this.logEvent({
+      kind: 'song-load', trackId: null,
+      before, after: JSON.parse(JSON.stringify(song)),
+      label: `${opts.replace ? 'replaced song with' : 'added'} pasted code (${lines.length} lines)`,
+      t: 0,
+    });
+    this.touch();
   }
 
   /** Bump revision so the editor regenerates its code (no undo entry). */

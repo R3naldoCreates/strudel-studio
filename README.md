@@ -59,6 +59,58 @@ strudel.cc itself.
 Every edit hot-swaps the pattern **while the music plays**. What you see in
 the editor is exactly what the engine hears.
 
+The built-in content is meant to be played, not just clicked:
+
+- **Song presets** are complete little arrangements — House, Techno, Boom Bap,
+  Drum & Bass and Ambient — each with a real chord progression, a bass that
+  follows the roots and a drum groove that fits the style. **Drum & Bass —
+  Rollout** starts with a 10-second pad/stab intro, then the break and sub drop
+  in and keep playing (a `mask(time.segment(1).gt(N))` gate, written as real
+  Strudel code on those two layers).
+- Drum patterns follow Strudel's own workshop examples rather than made-up
+  patterns: house is `bd*4, [- cp]*2, [- hh]*4` (clap on 2 & 4, **offbeat**
+  hats), the rock kit is `[bd sd]*2, hh*8`, and the DnB break is a steady
+  16-step two-step with ghost snares. Tempo uses Strudel's 4/4 convention —
+  `setcpm(bpm / 4)`, one bar per cycle — so nothing runs four times too fast.
+- **Source blocks** are usable musical ideas (four-on-the-floor, backbeat,
+  acid line, chord arp, filter pad…) rather than random note clouds.
+- The **mini-notation cheat sheet** was rewritten from the strudel.cc docs:
+  a practical Commonly Used set plus groups for sequencing, speed, weight,
+  rests/chords, randomness, Euclidean rhythms, notes/samples and pattern
+  functions. Click a mini-notation row to append it to the selected layer;
+  rows marked **JS** are reference only (paste them into the code editor —
+  they are not mini-notation and would silence a pattern).
+- `slider()` calls render as **inline controls inside the code**, exactly like
+  strudel.cc — drag one and the source value changes under it while playing.
+- The **inspector home button** (top-left) returns to song name and tempo from
+  any layer. The recorder's **X** closes it; REC or the top-bar pill reopens it.
+
+## Pasting someone else's code — safety, with the full snippet kept
+
+Paste any Bakery / example snippet from strudel.cc into the editor and the
+import dialog checks it **before** anything is added:
+
+- **Code safety first.** Anything that reaches outside Strudel — Tauri IPC,
+  file access, network requests, `eval`/dynamic imports, browser storage,
+  `window`/`document` access — is listed in red with the exact line and why it
+  is risky. Tick **Leave it in** for any item you trust; everything else is
+  removed by default. The live preview marks removed code red and kept code amber.
+- **Full pasted code is the default import mode.** The whole snippet is kept
+  verbatim and plays exactly as it does on the strudel.cc example page —
+  including `setcpm`, `samples({...})`, `slider()`, `.bank()` and anything the
+  layer mapper does not understand. **Editable layers** remains available when
+  you want strips and inspectors.
+- **Nothing is removed silently.** Every omitted snippet is written into the
+  song as a `// ⚠ omitted from pasted code:` comment and survives save/reload.
+- **Opening a shared `.strudel.json` gets the same check**, with a confirm
+  dialog before any unsafe code is loaded.
+- The **Sample Folder** button uses a native directory picker on desktop;
+  the webview is granted asset access only to the folder you choose.
+
+The desktop build also runs with a Content Security Policy, file IPC limited to
+`.json` song files, and a minimized asset-protocol scope. The GM soundfont
+loader parses its CDN data as data (no `eval`) so it works under that policy.
+
 ## Can I run Strudel offline?
 
 Yes — that's a first-class feature:
@@ -91,6 +143,7 @@ npm run tauri build  # installer/bundle → src-tauri/target/release/
 **Other ways to get it:** download the portable EXE from the [Releases](https://github.com/r3naldocreates/strudel-studio/releases/latest) page and run it anywhere — no installer needed — or clone this repo and `npm run tauri build`. The browser demo is the full app, minus desktop file integration.
 
 Browser-only dev (no Rust): `npm run dev` → http://127.0.0.1:1420
+Safety/parser checks: `npm test` (zero dependencies; needs Node 22.6+ for TypeScript type stripping — the app itself builds on Node 18+)
 
 Requirements: Windows + [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/)
 (preinstalled on Win 11), Node 18+, Rust 1.77+ with MSVC Build Tools.

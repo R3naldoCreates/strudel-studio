@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/src/styles.css" />
     <link rel="stylesheet" href="/src/ui/additives.css" />
+    <!-- carries .cm-playing (the “now playing” box highlight) and strip pulses -->
     <link rel="stylesheet" href="/src/ui/widgets.css" />
     <link rel="stylesheet" href="/src/ui/deck.css" />
     <title>Strudel Studio — Click-to-compose live music</title>
@@ -32,7 +33,7 @@
           <div class="bpm-ctl">
             <label for="bpm-range">BPM</label>
             <input id="bpm-range" type="range" min="60" max="200" step="1" value="132" />
-            <input id="bpm-num" type="number" min="20" max="300" step="1" value="132" />
+            <input id="bpm-num" type="number" min="20" max="300" step="1" value="132" aria-label="BPM value" />
           </div>
           <button id="btn-hush" class="hud-btn danger" title="Silence everything immediately (hush)">HUSH</button>
           <button id="btn-rec" class="rec-btn" aria-pressed="false" title="Open the Performance Deck and record what you play">
@@ -74,7 +75,6 @@
           <button id="btn-copy" class="mini-btn" title="Copy generated code to clipboard">Copy code</button>
           <button id="btn-format" class="mini-btn" title="Regenerate code from the song model">Regenerate</button>
         </div>
-        <div id="widget-bar" hidden></div>
         <div id="editor"></div>
         <div id="mini-hint" class="mini-hint">
           <span><b>mini-notation</b>:</span>
@@ -87,6 +87,9 @@
       <!-- right sidebar : inspector -->
       <aside id="rightbar" class="sidebar">
         <div class="side-head">
+          <button id="btn-inspector-home" class="insp-home" title="Back to song settings" aria-label="Back to song settings">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>
+          </button>
           <span class="side-title">Inspector</span>
           <span id="inspector-context" class="side-hint">nothing selected</span>
         </div>
@@ -115,7 +118,7 @@
       <!-- floating context menu -->
       <div id="ctx-menu" class="ctx-menu" hidden></div>
       <!-- toasts -->
-      <div id="toasts" class="toasts"></div>
+      <div id="toasts" class="toasts" aria-live="polite"></div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

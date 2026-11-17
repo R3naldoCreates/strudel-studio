@@ -131,6 +131,21 @@ No fragile regex-parsing of user code.
 - ✅ **FX bypass** — every effect can be muted without deleting (kept in the chain, absent from the code). Per-card power button, + "Bypass all" / "Enable all" / "Clear all" tools, and automation bypass too.
 - ✅ **Live sliders (widgets)** — strudel's own `slider()` widgets are detected in your code and rendered as draggable knobs under the toolbar; drags rewrite the source in place and hot-swap the pattern. Fully strudel.cc-compatible syntax.
 
+### v0.1.2 hardening & content ✅
+
+- Paste-import checks pasted JavaScript for host escape hatches (Tauri IPC, network, eval, storage, DOM). Each finding is a red warning with a per-item **Leave it in** choice; removed by default, listed in the song as comments.
+- **Full pasted code** mode (default) preserves the snippet verbatim for strudel.cc-identical behaviour; editable layers remain opt-in.
+- Song-file loads run the same safety check behind an in-app confirmation modal.
+- Native `<dialog>` modals (no `window.confirm`/`prompt`, which are inert in WebView2); native folder picker for the sample directory.
+- Tauri: CSP enabled, asset protocol scoped to `$APPDATA` + the chosen folder, file IPC limited to `.json` songs.
+- GM soundfont loader parses CDN font data with a strict literal parser instead of `eval`.
+- Version unified to 0.1.2 across package.json / Cargo.toml / tauri.conf.json; zero-dependency tests via `npm test`.
+- Content pass: 5 real song presets (chord progression + matching bass + style-appropriate groove), 17 musical source blocks instead of noise, cheat sheet rewritten from the strudel.cc mini-notation / time-modifier / random-modifier docs with a new Pattern Functions group.
+- UI: `slider()` widgets now render inline in the code (CodeMirror replacement decorations) like strudel.cc; inspector home button returns to song settings; recorder X closes the deck (minimize removed); fixed integer BPM display (`120` no longer shown as `12`).
+- Follow-up: restored `widgets.css` in index.html — it carries `.cm-playing`, so the note-highlight had become invisible. Sliders inside string literals are no longer turned into widgets. Cheat-sheet JavaScript rows are now marked **JS** and reference-only: clicking one warns instead of corrupting a pattern (the cause of "the guitar stopped playing"). House / Techno / Drum & Bass presets made fuller and less busy; Boom Bap + Ambient unchanged.
+- Arrival: `Track.delaySeconds` adds a one-time intro gate — codegen emits `mask(time.segment(1).gt(round(seconds × bpm / 240)))`, silent until the gate then playing forever. DnB Rollout uses a 10s intro (pad + stab) before break and sub enter.
+- Tempo correction: codegen now emits `setcpm(bpm / 4)` (Strudel's documented 4-beat-bar convention). Emitting `setcpm(bpm)` made every pattern 4× too fast — the root cause of the "jittery / blasting beats" reports. Drum patterns replaced with the official workshop beats (classic house with offbeat hats, basic rock `[bd sd]*2, hh*8`) and a steady 16-step DnB two-step.
+
 ### Phase 1 — Foundation ✅ (this build)
 Engine embedded, model → code, both sidebars, context menus, strips, scope,
 sample banks, save/open, offline, live token highlight, undo/redo, layer

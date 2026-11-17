@@ -9,6 +9,7 @@ import {
   isFavorite, toggleFavorite,
   loadCustomNotation, saveCustomNotation,
   NOTATION_GROUPS,
+  type NotationEntry,
 } from '../panelState';
 import { store } from '../state';
 import { makeTrack } from '../types';
@@ -152,7 +153,7 @@ function collectFavorites(): FavoriteChip[] {
   for (const entry of notationEntries) {
     const id = `notation:${entry.id}`;
     if (!isFavorite(id)) continue;
-    chips.push({ kindTag: 'NOTE', label: entry.syntax, hint: entry.desc, run: () => insertNotation(entry.syntax) });
+    chips.push({ kindTag: 'NOTE', label: entry.syntax, hint: entry.desc, run: () => insertNotation(entry.syntax, (entry as NotationEntry).codeOnly) });
   }
   // presets (built-in + user)
   for (const preset of allPresets()) {
@@ -411,7 +412,7 @@ function buildNotationSection(): HTMLElement {
     const favBlock = document.createElement('div');
     favBlock.className = 'notation-fav';
     favBlock.innerHTML = `<div class="notation-subhead">★ Favorites</div>`;
-    for (const entry of favNotation) favBlock.appendChild(notationRow(`notation:${entry.id}`, entry.syntax, entry.name, entry.desc));
+    for (const entry of favNotation) favBlock.appendChild(notationRow(`notation:${entry.id}`, entry.syntax, entry.name, entry.desc, (entry as NotationEntry).codeOnly));
     body.appendChild(favBlock);
   }
 
@@ -435,7 +436,7 @@ function buildNotationSection(): HTMLElement {
       setGroupOpen(`notation:${group.id}`, nowOpen);
     });
     for (const entry of group.items) {
-      list.appendChild(notationRow(`notation:${entry.id}`, entry.syntax, entry.name, entry.desc));
+      list.appendChild(notationRow(`notation:${entry.id}`, entry.syntax, entry.name, entry.desc, entry.codeOnly));
     }
     sub.appendChild(head);
     sub.appendChild(list);
@@ -510,20 +511,26 @@ function buildNotationSection(): HTMLElement {
   return el;
 }
 
-function notationRow(favId: string, syntax: string, name: string, desc: string): HTMLElement {
+function notationRow(favId: string, syntax: string, name: string, desc: string, codeOnly = false): HTMLElement {
   const row = document.createElement('div');
-  row.className = 'notion-row';
+  row.className = `notion-row${codeOnly ? ' notion-code' : ''}`;
   const main = document.createElement('button');
   main.className = 'notion-main';
-  main.innerHTML = `<code>${escapeHtml(syntax)}</code><span class="notion-name">${escapeHtml(name)}</span>`;
-  main.title = `${desc} — click to insert into the selected layer`;
-  main.addEventListener('click', () => insertNotation(syntax));
+  main.innerHTML = `<code>${escapeHtml(syntax)}</code><span class="notion-name">${escapeHtml(name)}</span>${codeOnly ? '<span class="notion-code-tag">JS</span>' : ''}`;
+  main.title = codeOnly
+    ? `${desc} — reference only: paste this into the code editor, not a pattern`
+    : `${desc} — click to insert into the selected layer`;
+  main.addEventListener('click', () => insertNotation(syntax, codeOnly));
   row.appendChild(main);
   row.appendChild(starButton(favId, syntax));
   return row;
 }
 
-function insertNotation(token: string): void {
+function insertNotation(token: string, codeOnly = false): void {
+  if (codeOnly) {
+    toast('That’s Strudel JavaScript — paste it into the code editor. It won’t work inside a pattern.', 'error');
+    return;
+  }
   const { song, selection } = store.state;
   const track = song.tracks.find((t) => t.id === selection.trackId) ?? song.tracks[song.tracks.length - 1];
   if (!track) {

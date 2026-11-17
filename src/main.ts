@@ -11,12 +11,12 @@ import { Scope } from './ui/scope';
 import { initToasts, showToast } from './ui/toast';
 import { enginePlay, engineStop, enginePanic, enumerateBundledBanks, registerFolder, isTauriRuntime, onHapFlash } from './engineFacade';
 import { spanAt } from './codegen';
-import { createWidgetBar, type WidgetBarHandle } from './ui/widgetBar';
 import { initDeck, renderDeck, toggleRecord } from './ui/deck';
-import type { CodeSpan, SelectionKind } from './types';
+import type { CodeSpan, SelectionKind, Song } from './types';
+import { showConfirm, showTextInput } from './ui/modal';
+import { scanCodeSafety, applySafetyChoices, omittedComment, isSafeSampleCall } from './codeSafety';
 
 let editor: EditorHandle;
-let widgetBar: WidgetBarHandle;
 let evalDebounce: number | null = null;
 let liveEvalDebounce: number | null = null;
 let lastRevision = -1;
@@ -50,7 +50,6 @@ function liveEval(): void {
 function refreshCode(evaluateIfPlaying: boolean): void {
   const { code, spans } = generate(store.state.song);
   editor.setCode(code, spans);
-  widgetBar?.update(code);
   if (evaluateIfPlaying && store.state.isPlaying) {
     if (evalDebounce !== null) window.clearTimeout(evalDebounce);
     setEvalStatus('hot-swapping…', 'busy');
@@ -199,14 +198,41 @@ async function openSong(): Promise<void> {
   input.click();
 }
 
-function loadSongJson(json: string): void {
+async function loadSongJson(json: string): Promise<void> {
   try {
-    const song = JSON.parse(json);
+    let song = JSON.parse(json) as Song;
     if (song?.formatVersion !== 1 || !Array.isArray(song.tracks)) {
       throw new Error('not a Strudel Studio song file');
     }
+    // A shared song file can carry pasted code. Check it with the same scanner
+    // used for the clipboard, and ask before loading anything that escapes
+    // the Strudel environment (Tauri IPC, network, eval, storage, DOM).
+    const codeLines = [...(song.extraSampleCalls ?? []), ...(song.extraCode ?? [])];
+    const findings = codeLines.flatMap((line) => scanCodeSafety(line));
+    if (findings.length > 0) {
+      const approved = await showConfirm({
+        title: 'This song file contains code outside Strudel',
+        message: `${findings.length} item${findings.length === 1 ? '' : 's'} could reach your files, the network or the webview. Load the song with those items removed?`,
+        detail: findings.slice(0, 5).map((f) => `${f.level}: ${f.text.slice(0, 110)} — ${f.reason}`).join('\n'),
+        confirmLabel: 'Load without them',
+        cancelLabel: 'Don’t load',
+        danger: true,
+      });
+      if (!approved) return;
+      const cleanLines = (lines: string[] | undefined): string[] =>
+        (lines ?? []).map((line) => applySafetyChoices(line, scanCodeSafety(line), new Set<string>()).code);
+      song = {
+        ...song,
+        extraSampleCalls: cleanLines(song.extraSampleCalls).filter(isSafeSampleCall),
+        extraCode: cleanLines(song.extraCode),
+        omittedNotes: [
+          ...(song.omittedNotes ?? []),
+          ...findings.flatMap((f) => omittedComment([f.text])),
+        ],
+      };
+    }
     store.setSong(song);
-    showToast(`Loaded “${song.name ?? 'song'}”`);
+    showToast(`Loaded “${song.name ?? 'song'}”` + (findings.length ? ` · ${findings.length} unsafe item${findings.length === 1 ? '' : 's'} removed` : ''));
   } catch (err) {
     showToast(`Invalid song file: ${errText(err)}`, 'error');
   }
@@ -214,12 +240,22 @@ function loadSongJson(json: string): void {
 
 // ── custom sample folder ─────────────────────────────────────────────────────
 async function pickSampleFolder(): Promise<void> {
-  if (!isTauriRuntime()) {
-    showToast('Folder scanning needs the desktop app', 'error');
-    return;
-  }
   const current = store.state.customSamplesPath ?? '';
-  const path = window.prompt('Absolute path to your sample folder (subfolders = banks, .wav/.mp3/.ogg/.flac):', current || 'C:\\samples');
+  let path: string | null;
+  if (isTauriRuntime()) {
+    // Native folder picker — window.prompt() is inert in the WebView2 build.
+    const { open } = await import('@tauri-apps/plugin-dialog');
+    const picked = await open({ directory: true, multiple: false, title: 'Choose your sample folder' });
+    path = typeof picked === 'string' ? picked : null;
+  } else {
+    showToast('Folder scanning needs the desktop app — path entry is for the browser demo only', 'info');
+    path = await showTextInput({
+      title: 'Sample folder',
+      label: 'Absolute path (subfolders become banks, .wav/.mp3/.ogg/.flac):',
+      value: current || undefined,
+      placeholder: 'C:\\samples',
+    });
+  }
   if (!path) return;
   const input = $('folder-path') as HTMLInputElement;
   input.hidden = false;
@@ -248,22 +284,15 @@ async function boot(): Promise<void> {
   // left panel + blocks
   renderBlocksPanel($('blocks-panel'));
 
-  // widget bar (live sliders from slider() calls in the code)
-  widgetBar = createWidgetBar($('widget-bar'), {
-    getDoc: () => editor.view.state.doc.toString(),
-    replaceRange: (from, to, text) => editor.replaceRange(from, to, text),
-    onLiveChange: () => liveEval(),
-  });
-
-  // editor
+  // editor — slider() calls render as inline controls inside the code
   editor = createEditor(
     $('editor'),
     (span, offset, x, y, button) => handleTokenClick(span, offset, x, y, button),
     () => {
       // manual typing: mark as hand-edited; don't fight the user's caret
       store.setHandEdited(true);
-      widgetBar.update(editor.view.state.doc.toString());
     },
+    () => liveEval(),
   );
 
   // scope
@@ -283,6 +312,7 @@ async function boot(): Promise<void> {
   $('btn-play').addEventListener('click', () => void togglePlay());
   $('btn-undo').addEventListener('click', () => store.undo());
   $('btn-redo').addEventListener('click', () => store.redo());
+  $('btn-inspector-home').addEventListener('click', () => store.select({ kind: 'none' }));
   $('btn-hush').addEventListener('click', () => {
     enginePanic();
     store.setPlaying(false);

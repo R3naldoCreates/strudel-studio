@@ -109,8 +109,7 @@ function buildDeckElement(): void {
       <span class="deck-title"><span class="deck-dot" aria-hidden="true"></span>Recorder</span>
       <span class="deck-head-actions">
         <span class="deck-focus-chip" id="deck-focus-chip" hidden></span>
-        <button class="deck-icon-btn" id="deck-min" title="Minimize to top bar">—</button>
-        <button class="deck-icon-btn" id="deck-close" title="Close recorder">×</button>
+        <button class="deck-icon-btn" id="deck-close" title="Close recorder" aria-label="Close recorder">×</button>
       </span>
     </div>
     <div class="deck-body">
@@ -168,11 +167,11 @@ function buildDeckElement(): void {
   deck.querySelector('#deck-del')!.addEventListener('click', () => deleteSelected());
   deck.querySelector('#deck-play')!.addEventListener('click', () => toggleTakePlayback());
   deck.querySelector('#deck-rec')!.addEventListener('click', () => toggleRecord());
-  deck.querySelector('#deck-min')!.addEventListener('click', () => setMinimized(true));
   deck.querySelector('#deck-close')!.addEventListener('click', () => {
     if (state.armed) stopRecording();
-    state.minimized = false;
-    renderShellVisibility();
+    // Closing and minimizing were the same action — one X now hides the deck
+    // and shows the top-bar pill; REC or the pill brings it back.
+    setMinimized(true);
   });
   deck.querySelector('#deck-focus-chip')!.addEventListener('click', () => setFocus(null));
 

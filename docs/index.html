@@ -309,7 +309,7 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
           <div class="wrap grid">
             <div class="menu-col span-4"><p class="t-label">Strudel Studio</p><a href="#features">Blocks &amp; the timeline<span>click a block, get a layer</span></a><a href="#recorder">The take recorder<span>scrub to any second, replay it</span></a><a href="#library">Instrument Library<span>125 GM fonts + VCSL</span></a></div>
             <div class="menu-col span-4"><p class="t-label">The community</p><a href="https://strudel.cc">strudel.cc<span>the live-coding language</span></a><a href="https://codeberg.org/uzu/strudel">Strudel source<span>the engine, on Codeberg</span></a><a href="https://github.com/r3naldocreates/strudel-studio">This repo<span>Strudel Studio itself</span></a></div>
-            <div class="menu-col span-4"><p class="t-label">Start here</p><a href="./demo/">Try the browser demo<span>press Play, click a block</span></a><a href="https://github.com/r3naldocreates/strudel-studio/releases/latest">Download for Windows<span>v0.1.1 - 12 MB - WebView2</span></a></div>
+            <div class="menu-col span-4"><p class="t-label">Start here</p><a href="./demo/">Try the browser demo<span>press Play, click a block</span></a><a href="https://github.com/r3naldocreates/strudel-studio/releases/latest">Download for Windows<span>v0.1.2 - WebView2</span></a></div>
           </div>
         </div>
       </div>
@@ -335,10 +335,10 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
         <h1 id="hero-h">Live-code music without writing code</h1>
         <p class="hero__lead">Strudel Studio wraps <a href="https://strudel.cc">Strudel</a>, the live-coding music language, in a DAW you drive with clicks. Blocks, faders, an LFO, a take recorder. Every knob writes real Strudel code you can read, copy, or hand to strudel.cc.</p>
         <div class="btn-row"><a class="btn btn--primary" href="./demo/">Try it in your browser</a><a class="btn btn--secondary" href="#download">Download for Windows</a></div>
-        <p class="hero__meta">Windows 10/11 · WebView2 · <b>100% offline after install</b> · ~11 MB</p>
+        <p class="hero__meta">Windows 10/11 · WebView2 · <b>offline-first</b> · no build tools</p>
       </div>
       <div class="hero__media span-6 start-7">
-        <img src="images/app-hero.jpg" alt="Strudel Studio playing Breakcore Chop: generated strudel code on the left, three mixer strips with faders and LFOs below the timeline" fetchpriority="high" style="--ly-pos: 16% 40%">
+        <img src="images/app-hero.jpg" alt="Strudel Studio: generated strudel code with live note highlighting, mixer strips with faders and LFOs below the timeline" fetchpriority="high" style="--ly-pos: 16% 40%">
         <div class="ly-float"><div class="ly-float__row"><span class="ly-live" aria-hidden="true"></span><span>Live</span></div><div class="ly-float__title">100% offline · bundled uzu-drumkit</div></div>
       </div>
     </div></div>
@@ -354,7 +354,7 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
           <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9l9.5 3.4L13.2 14l2.6 4.8-2 .8-2.5-4.8-4.6 4.6z"/></svg></div>
           <span class="step-num">01 / CLICK</span>
           <h3>Click a block</h3>
-          <p>Four on the floor, an acid line, a supersaw lead; every click adds a real layer to the timeline.</p>
+          <p>Four-on-the-floor, an acid line, a filter pad; every block is a usable musical idea and adds a real layer to the timeline.</p>
         </div>
         <div class="step-card">
           <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="7 5 19 12 7 19 7 5" stroke-linejoin="round"/></svg></div>
@@ -389,7 +389,7 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
           </div>
           <div class="tile tile--narrow" id="recorder">
             <div class="tile__text"><h3>The take recorder</h3><p>Not audio capture: a <em>session</em> record. One event per thing you did, coalesced, scrubbed to any second. <code>R</code> arms it.</p></div>
-            <div class="tile__media"><img src="images/app-recorder.jpg" alt="The Strudel Studio recorder: BPM, Break, Rumble and Siren lanes with event blocks at 0:44, 0:53 and 1:01" loading="lazy" decoding="async"></div>
+            <div class="tile__media"><img src="images/app-recorder.jpg" alt="The Strudel Studio recorder: lanes per layer with event blocks you can scrub and replay" loading="lazy" decoding="async"></div>
           </div>
         </div>
         <div class="bento bento--lower">
@@ -398,7 +398,7 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
             <div class="tile__media"><img src="images/app-library.jpg" alt="The Instrument Library: GM families with instrument counts and a search box" loading="lazy" decoding="async"></div>
           </div>
           <div class="tile tile--half">
-            <div class="tile__text"><h3>Mini-notation cheat sheet</h3><p>The full <a href="https://strudel.cc/learn/mini-notation/">mini-notation</a> set, grouped. Brackets, Euclid, randomness. Star any row to pin it, or add your own. Click a row, it lands in your pattern.</p></div>
+            <div class="tile__text"><h3>Mini-notation cheat sheet</h3><p>Built from the <a href="https://strudel.cc/learn/mini-notation/">Strudel docs</a>: brackets, Euclid, randomness and pattern functions, grouped. Click a mini-notation row to add it; rows marked <b>JS</b> are reference only. Star any row to pin it, or add your own.</p></div>
             <div class="tile__media"><img src="images/app-cheatsheet.jpg" alt="The grouped mini-notation cheat sheet with starred favourites" loading="lazy" decoding="async"></div>
           </div>
         </div>
@@ -431,9 +431,9 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
       <div class="download-grid">
         <a class="dl-card recommended" href="https://github.com/r3naldocreates/strudel-studio/releases/latest">
           <span class="dl-tag">Recommended · Windows</span>
-          <h3>Windows app v0.1.1</h3>
-          <p><b>v0.1.1</b> - GM-soundfont fix, Bakery paste-import, remote packs prebaked. No build tools. Requires WebView2, preinstalled on Windows 11.</p>
-          <span class="dl-cta">Download v0.1.1 for Windows →</span>
+          <h3>Windows app v0.1.2</h3>
+          <p><b>v0.1.2</b> - real song presets and usable blocks, correct Strudel tempo, safe paste-import, inline sliders, native file dialogs. No build tools. Requires WebView2, preinstalled on Windows 11.</p>
+          <span class="dl-cta">Download v0.1.2 for Windows →</span>
         </a>
         <a class="dl-card" href="./demo/">
           <span class="dl-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M3 12h18"/></svg></span>
@@ -458,7 +458,7 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
   <section class="section" id="roadmap" aria-labelledby="roadmap-h">
     <div class="wrap">
       <div class="section-head"><h2 id="roadmap-h">What ships next <span class="muted">the Strudel Studio roadmap.</span></h2></div>
-      <div class="road-visual"><img src="images/app-recorder.jpg" alt="The Strudel Studio take recorder: lanes per layer, event blocks at 0:44, 0:53 and 1:01" loading="lazy" decoding="async"></div>
+      <div class="road-visual"><img src="images/app-recorder.jpg" alt="The Strudel Studio take recorder: one lane per layer, with event blocks to scrub and replay" loading="lazy" decoding="async"></div>
       <div class="road-grid">
         <div class="road-item"><span>Next</span><b>Piano-roll &amp; step sequencer</b></div>
         <div class="road-item"><span>Next</span><b>Velocity lanes &amp; per-track swing</b></div>
@@ -516,7 +516,7 @@ main > .hero { padding: clamp(64px, 10vh, 96px) 0 clamp(40px, 6vh, 72px); }
           <a class="nav__logo" href="#top" style="color:#18191b"><span class="mark" data-mark="stack" aria-hidden="true"></span>Strudel Studio</a>
           <p class="footer__lede">A click-to-compose studio for Strudel. Free, AGPL-3.0, for the community.</p>
         </div>
-        <div class="span-3 start-7 footer__col"><h4>Download</h4><ul><li><a href="https://github.com/r3naldocreates/strudel-studio/releases/latest">Windows release v0.1.1</a></li><li><a href="./demo/">Browser demo</a></li><li><a href="https://github.com/r3naldocreates/strudel-studio#quick-start">Build from source</a></li></ul></div>
+        <div class="span-3 start-7 footer__col"><h4>Download</h4><ul><li><a href="https://github.com/r3naldocreates/strudel-studio/releases/latest">Windows release v0.1.2</a></li><li><a href="./demo/">Browser demo</a></li><li><a href="https://github.com/r3naldocreates/strudel-studio#quick-start">Build from source</a></li></ul></div>
         <div class="span-3 footer__col"><h4>Community</h4><ul><li><a href="https://strudel.cc">strudel.cc</a></li><li><a href="https://codeberg.org/uzu/strudel">Strudel source</a></li><li><a href="https://github.com/r3naldocreates/strudel-studio">This repo</a></li></ul></div>
       </div>
       <p class="colophon">Made with open tools, Host Grotesk + JetBrains Mono on an Ubuntu + Windows bench. No trackers on this page either.</p>

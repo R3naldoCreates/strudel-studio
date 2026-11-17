@@ -21,12 +21,50 @@ export interface WidgetSlider {
   line: number;
 }
 
+/** Blank out strings/comments so a `slider(...)` typed inside a pattern string is not turned into a widget. */
+function maskNonCode(src: string): string {
+  const out: string[] = [];
+  let i = 0;
+  type Mode = 'code' | 'line' | 'block' | 'single' | 'double' | 'template';
+  let mode: Mode = 'code';
+  const blank = (c: string): string => (c === '\n' || c === '\r' ? c : ' ');
+  while (i < src.length) {
+    const c = src[i];
+    const n = src[i + 1];
+    if (mode === 'code') {
+      if (c === '/' && n === '/') { out.push('  '); i += 2; mode = 'line'; continue; }
+      if (c === '/' && n === '*') { out.push('  '); i += 2; mode = 'block'; continue; }
+      if (c === '"' || c === "'" || c === '`') {
+        out.push(' '); i += 1;
+        mode = c === '"' ? 'double' : c === "'" ? 'single' : 'template';
+        continue;
+      }
+      out.push(c); i += 1; continue;
+    }
+    if (mode === 'line') {
+      out.push(blank(c)); i += 1;
+      if (c === '\n') mode = 'code';
+      continue;
+    }
+    if (mode === 'block') {
+      if (c === '*' && n === '/') { out.push('  '); i += 2; mode = 'code'; continue; }
+      out.push(blank(c)); i += 1; continue;
+    }
+    if (c === '\\') { out.push(blank(c) + blank(n ?? '')); i += 2; continue; }
+    out.push(blank(c)); i += 1;
+    const close = mode === 'double' ? '"' : mode === 'single' ? "'" : '`';
+    if (c === close) mode = 'code';
+  }
+  return out.join('');
+}
+
 /** parse a `slider(...)` argument list without trying to eval anything */
 export function findWidgets(doc: string): WidgetSlider[] {
   const out: WidgetSlider[] = [];
   const re = /\bslider\s*\(/g;
+  const source = maskNonCode(doc);
   let match: RegExpExecArray | null;
-  while ((match = re.exec(doc))) {
+  while ((match = re.exec(source))) {
     const openParen = match.index + match[0].length - 1;
     const parsed = parseCall(doc, openParen);
     if (!parsed) continue;

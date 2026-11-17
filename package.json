@@ -1,6 +1,6 @@
 {
   "name": "strudel-studio",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A click-to-compose desktop interface for Strudel (offline, AGPL-3.0)",
   "license": "AGPL-3.0-or-later",
   "type": "module",
@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types tests/check_code_safety.ts && node --experimental-strip-types tests/check_font_data.ts",
     "tauri": "tauri",
     "app": "tauri dev"
   },

@@ -23,26 +23,15 @@ import gm from '@strudel/soundfonts/gm.mjs';
 
 const FONT_BASE = 'https://felixroos.github.io/webaudiofontdata/sound';
 
-interface GmZone {
-  originalPitch: number;
-  keyRangeLow: number;
-  keyRangeHigh: number;
-  coarseTune: number;
-  fineTune: number;
-  loopStart: number;
-  loopEnd: number;
-  sampleRate: number;
-  sample?: string;
-  file?: string;
-}
+import { parseFontZones, type GmZone } from './fontData';
 
 type GmMap = Record<string, string[]>;
 const instruments = gm as unknown as GmMap;
 
 const fontUrl = (name: string): string => `${FONT_BASE}/${name}.js`;
 
-// font files are `console.log(...); var _tone_x={ zones:[ ... ] };`
-// eval'ing the object literal returns the zones array via a labelled statement
+// font files are `console.log(...); var _tone_x={ zones:[ ... ] };` — parsed
+// as a data literal, never executed (see fontData.ts).
 const loadCache = new Map<string, Promise<GmZone[]>>();
 function loadFont(name: string): Promise<GmZone[]> {
   const cached = loadCache.get(name);
@@ -50,10 +39,7 @@ function loadFont(name: string): Promise<GmZone[]> {
   const load = (async () => {
     const res = await fetch(fontUrl(name));
     if (!res.ok) throw new Error(`font ${name}: ${res.status}`);
-    const text = await res.text();
-    const [, data] = text.split('={');
-    // eslint-disable-next-line no-eval
-    return eval(`{${data}`) as GmZone[];
+    return parseFontZones(await res.text());
   })();
   loadCache.set(name, load);
   return load;

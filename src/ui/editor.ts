@@ -1,5 +1,5 @@
 // ─── Editor: CodeMirror with strudel flavour + span-aware clicks ─────────────
-import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, Decoration, type DecorationSet } from '@codemirror/view';
+import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, Decoration, WidgetType, type DecorationSet } from '@codemirror/view';
 import { EditorState, RangeSet, StateEffect, StateField } from '@codemirror/state';
 import { StreamLanguage, syntaxHighlighting, LanguageSupport, HighlightStyle } from '@codemirror/language';
 import { tags, Tag } from '@lezer/highlight';
@@ -9,6 +9,7 @@ import type { CodeSpan } from '../types';
 import { spanAt } from '../codegen';
 import { looksLikeStrudel } from '../importPattern';
 import { openImportDialog } from './importDialog';
+import { findWidgets, formatWidgetNumber, type WidgetSlider } from './widgets';
 
 const strudelName = (token: string): string | null => {
   // rough keyword table — strudel has hundreds of fns; anything word-call shaped
@@ -108,10 +109,71 @@ const playheadField = StateField.define<DecorationSet>({
 
 const playheadDecorations = EditorView.decorations.compute([playheadField], (state) => state.field(playheadField));
 
+/**
+ * strudel.cc renders slider() calls as controls *inside the code*. We do the
+ * same with a replacement decoration: the literal call is shown as a small
+ * draggable slider, and dragging rewrites the source underneath it.
+ */
+class SliderWidget extends WidgetType {
+  constructor(
+    public w: WidgetSlider,
+    private readonly replace: (from: number, to: number, text: string) => void,
+    private readonly onLive: () => void,
+  ) { super(); }
+
+  eq(other: SliderWidget): boolean {
+    return this === other || (this.w.value === other.w.value && this.w.context === other.w.context);
+  }
+
+  toDOM(): HTMLElement {
+    const wrap = document.createElement('span');
+    wrap.className = 'cm-slider-wrap';
+    wrap.title = `slider(${this.w.value}, ${this.w.min}, ${this.w.max}) — drag to change it in the code`;
+
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.className = 'cm-slider';
+    input.min = String(this.w.min);
+    input.max = String(this.w.max);
+    input.step = String(this.w.step > 0 ? this.w.step : (this.w.max - this.w.min) / 200);
+    input.value = String(this.w.value);
+    input.setAttribute('aria-label', `${this.w.context} slider`);
+
+    const readout = document.createElement('span');
+    readout.className = 'cm-slider-value';
+    readout.textContent = formatWidgetNumber(this.w.value);
+
+    input.addEventListener('input', () => {
+      const v = Number(input.value);
+      readout.textContent = formatWidgetNumber(v);
+      this.replace(this.w.valueFrom, this.w.valueTo, formatWidgetNumber(v));
+      this.onLive();
+    });
+    // never let the editor treat a slider drag as text selection / token click
+    wrap.addEventListener('mousedown', (e) => e.stopPropagation());
+    wrap.addEventListener('pointerdown', (e) => e.stopPropagation());
+    wrap.addEventListener('click', (e) => e.stopPropagation());
+
+    wrap.append(input, readout);
+    return wrap;
+  }
+
+  updateDOM(node: HTMLElement): boolean {
+    const input = node.querySelector('input');
+    const readout = node.querySelector('.cm-slider-value');
+    if (input && Number(input.value) !== this.w.value) input.value = String(this.w.value);
+    if (readout) readout.textContent = formatWidgetNumber(this.w.value);
+    return true;
+  }
+
+  ignoreEvent(): boolean { return true; }
+}
+
 export function createEditor(
   parent: HTMLElement,
   onTokenClick: (span: CodeSpan | undefined, offset: number, x: number, y: number, button: 0 | 2) => void,
   onEdit: () => void,
+  onWidgetChange: () => void,
 ): EditorHandle {
   const theme = EditorView.theme(
     {
@@ -129,6 +191,17 @@ export function createEditor(
       '.cm-line': { padding: '0 14px 0 8px' },
       '.cm-gutters': { backgroundColor: 'transparent', border: 'none', color: '#3b4158' },
       '.cm-activeLine': { backgroundColor: 'rgba(255,255,255,0.025)' },
+      '.cm-slider-wrap': {
+        display: 'inline-flex', alignItems: 'center', gap: '5px',
+        padding: '0 6px', margin: '0 2px', verticalAlign: 'middle',
+        border: '1px solid #2d3550', borderRadius: '6px',
+        background: 'rgba(53,224,255,0.07)',
+      },
+      '.cm-slider': { width: '74px', accentColor: '#35e0ff', cursor: 'pointer' },
+      '.cm-slider-value': {
+        fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+        fontSize: '11px', color: '#b6ff3b', minWidth: '26px', textAlign: 'right',
+      },
       '.cm-activeLineGutter': { backgroundColor: 'transparent', color: '#7f88ab' },
       '.cm-cursor': { borderLeftColor: '#ff3ea5', borderLeftWidth: '2px' },
       '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': { backgroundColor: 'rgba(53,224,255,0.16) !important' },
@@ -146,6 +219,34 @@ export function createEditor(
     { dark: true },
   );
 
+  let view: EditorView;
+  const replaceWidgetValue = (from: number, to: number, text: string): void => {
+    view.dispatch({ changes: { from, to, insert: text } });
+  };
+
+  // Reuse widget instances across edits so a slider is not torn down mid-drag.
+  const widgetCache = new Map<string, SliderWidget>();
+  const widgetDecorationsFor = (doc: string): DecorationSet => {
+    const found = findWidgets(doc);
+    const seen = new Set<string>();
+    for (const w of found) {
+      seen.add(w.key);
+      const existing = widgetCache.get(w.key);
+      if (existing) existing.w = w;
+      else widgetCache.set(w.key, new SliderWidget(w, replaceWidgetValue, onWidgetChange));
+    }
+    for (const key of [...widgetCache.keys()]) if (!seen.has(key)) widgetCache.delete(key);
+    return Decoration.set(
+      found.map((w) => Decoration.replace({ widget: widgetCache.get(w.key)! }).range(w.from, w.to)),
+      true,
+    );
+  };
+  const sliderField = StateField.define<DecorationSet>({
+    create: (state) => widgetDecorationsFor(state.doc.toString()),
+    update: (_value, tr) => widgetDecorationsFor(tr.state.doc.toString()),
+  });
+  const sliderDecorations = EditorView.decorations.compute([sliderField], (state) => state.field(sliderField));
+
   const state = EditorState.create({
     doc: '// press play…',
     extensions: [
@@ -153,6 +254,7 @@ export function createEditor(
       highlightActiveLine(),
       highlightSpecialChars(),
       drawSelection(),
+      EditorView.contentAttributes.of({ 'aria-label': 'Strudel code editor' }),
       history(),
       EditorView.lineWrapping,
       keymap.of([...defaultKeymap, ...historyKeymap]),
@@ -161,6 +263,8 @@ export function createEditor(
       spanField,
       playheadField,
       playheadDecorations,
+      sliderField,
+      sliderDecorations,
       theme,
       EditorView.domEventHandlers({
         mousedown(event, view) {
@@ -190,11 +294,11 @@ export function createEditor(
           if (!text || !looksLikeStrudel(text)) return false;
           event.preventDefault();
           openImportDialog(text, {
-            onPasteAsIs: () => {
+            onPasteAsIs: (code) => {
               const range = view.state.selection.main;
               view.dispatch({
-                changes: { from: range.from, to: range.to, insert: text },
-                selection: { anchor: range.from + text.length },
+                changes: { from: range.from, to: range.to, insert: code },
+                selection: { anchor: range.from + code.length },
                 userEvent: 'input.paste',
               });
             },
@@ -212,7 +316,7 @@ export function createEditor(
     ],
   });
 
-  const view = new EditorView({ state, parent });
+  view = new EditorView({ state, parent });
   let currentSpans: CodeSpan[] = [];
   /** set while the editor itself replaces the doc (setCode) — suppresses the hand-edit flag */
   let suppressOnEdit = false;

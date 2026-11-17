@@ -76,7 +76,10 @@ function logPos(v: number, min: number, max: number): number {
 }
 
 function formatNum(v: number, dp: number): string {
-  return v.toFixed(dp).replace(/\.?0+$/, '').replace(/^-0$/, '0');
+  const s = v.toFixed(dp);
+  // Only trim zeros from the fractional part — "120" must not become "12".
+  if (!s.includes('.')) return s === '-0' ? '0' : s;
+  return s.replace(/0+$/, '').replace(/\.$/, '').replace(/^-0$/, '0');
 }
 
 function section(title: string): HTMLElement {
@@ -157,7 +160,7 @@ function renderSongOverview(root: HTMLElement, trackCount: number): void {
   });
   root.appendChild(labeled('Name', nameInput));
 
-  root.appendChild(sliderRow('Tempo (cycles/min)', song.bpm, 40, 240, {
+  root.appendChild(sliderRow('Tempo', song.bpm, 40, 240, {
     dp: 0, unit: 'bpm', onChange: (v) => store.setBpm(Math.round(v)),
   }));
 
@@ -208,6 +211,9 @@ function renderTrackHeader(root: HTMLElement, track: Track): void {
 
   head.append(dot, nameInput, muteBtn, soloBtn, deleteBtn);
   root.appendChild(head);
+  if (track.delaySeconds && track.delaySeconds > 0) {
+    root.appendChild(h('div', 'intro-badge', `Intro — this layer enters after ${track.delaySeconds}s`));
+  }
 }
 
 // ── pattern editor ───────────────────────────────────────────────────────────

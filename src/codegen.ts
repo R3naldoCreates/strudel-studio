@@ -8,6 +8,7 @@
 
 import type { Song, CodeSpan, Automation } from './types';
 import { formatNumber, fxValueCode } from './fx';
+import { isSafeSampleCall } from './codeSafety';
 
 export interface GeneratedCode {
   code: string;
@@ -26,12 +27,23 @@ export function generate(song: Song): GeneratedCode {
     return from;
   };
 
-  // header
-  push(`setcpm(${formatNumber(song.bpm)})\n`);
+  // header. Strudel's cpm is cycles per MINUTE, not musical BPM: one 4/4 bar
+  // per cycle means setcpm(bpm / 4). Emitting setcpm(bpm) made every preset
+  // four times too fast (the "jittery break" problem).
+  const cpm = song.bpm / 4;
+  push(`setcpm(${formatNumber(cpm)})\n`);
+
+  // Anything removed from a pasted snippet is written down, never a silent edit.
+  for (const note of song.omittedNotes ?? []) push(`${note}\n`);
+
   // sample banks pasted in as imports — registered before anything plays
   for (const call of song.extraSampleCalls ?? []) {
-    if (/^samples\s*\(/.test(call) && !/[\r\n]/.test(call) && call.length <= 600) push(`${call}\n`);
+    if (isSafeSampleCall(call)) push(`${call}\n`);
   }
+
+  // Full pasted code: emitted byte-for-byte after the safety choices were
+  // applied, so the snippet runs exactly as it does on strudel.cc.
+  for (const line of song.extraCode ?? []) push(`${line}\n`);
 
   const anySolo = song.tracks.some((t) => t.solo);
 
@@ -41,7 +53,8 @@ export function generate(song: Song): GeneratedCode {
 
     push(`\n`);
     // comment header — clicking it selects the whole track
-    const nameTag = `// ${SEP.slice(0, 12)} [track:${track.id}] ${track.name}\n`;
+    const introNote = track.delaySeconds ? ` · enters after ${track.delaySeconds}s` : '';
+    const nameTag = `// ${SEP.slice(0, 12)} [track:${track.id}] ${track.name}${introNote}\n`;
     const headerFrom = push(nameTag);
     spans.push({ from: headerFrom, to: headerFrom + nameTag.length - 1, kind: 'track', trackId: track.id });
 
@@ -108,6 +121,15 @@ export function generate(song: Song): GeneratedCode {
     }
 
     if (track.orbit !== null) emit(`.orbit(${formatNumber(track.orbit)})`, 'orbit');
+
+    // Arrangement gate: silence for the first N seconds, then play forever.
+    // time.segment(1) samples the global clock once per cycle; gt(N) flips it
+    // on after the intro and never flips back (unlike a looping mask pattern).
+    if (track.delaySeconds && track.delaySeconds > 0) {
+      // cps = cpm / 60 = (bpm / 4) / 60
+      const cycles = Math.max(1, Math.round((track.delaySeconds * song.bpm) / 240));
+      emit(`.mask(time.segment(1).gt(${cycles}))`, 'track');
+    }
 
     const line = pieces.join('') + '\n';
     code += line;

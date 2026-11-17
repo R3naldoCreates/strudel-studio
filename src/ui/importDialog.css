@@ -1,22 +1,28 @@
-/* ─── Paste-import dialog ─────────────────────────────────────────────── */
-.ipd-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 120;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+/* ─── Paste-import dialog (native <dialog>) ───────────────────────────── */
+/* Scroll containment on the dialog + backdrop, never on html or body. */
+dialog.ipd-overlay {
+  width: min(680px, 94vw);
+  max-width: none;
+  max-height: min(90vh, 860px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: visible;
+  overscroll-behavior: contain;
+}
+dialog.ipd-overlay::backdrop {
   background: rgba(4, 6, 12, 0.74);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  animation: ipd-fade 0.18s ease;
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
-@keyframes ipd-fade { from { opacity: 0; } }
 
 .ipd-panel {
-  width: min(600px, 94vw);
-  max-height: min(84vh, 760px);
+  width: 100%;
+  max-height: min(90vh, 860px);
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, var(--panel-2), var(--panel));
@@ -243,7 +249,7 @@
   color: var(--dim);
   line-height: 1.5;
   padding: 8px 10px;
-  border-left: 2px solid var(--amber);
+  border: 1px solid rgba(255, 209, 102, 0.22);
   background: rgba(255, 209, 102, 0.05);
   border-radius: 6px;
 }
@@ -285,3 +291,97 @@
 }
 .ipd-btn-primary:hover { filter: brightness(1.1); }
 .ipd-btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+/* ── safety review ─────────────────────────────────────────────────────── */
+.ipd-safety .ipd-section-head h3 { color: var(--red); }
+.ipd-safety-count {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #ff9a9a;
+}
+.ipd-risk-row { align-items: flex-start; border-color: rgba(255, 82, 82, 0.45); background: rgba(255, 82, 82, 0.05); }
+.ipd-risk-row:has(.ipd-risk-check:checked) { border-color: rgba(255, 209, 102, 0.5); background: rgba(255, 209, 102, 0.06); }
+.ipd-risk-badge {
+  flex: 0 0 auto;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.ipd-risk-badge.is-blocked { color: var(--red); border-color: rgba(255, 82, 82, 0.5); }
+.ipd-risk-badge.is-warning { color: var(--amber); border-color: rgba(255, 209, 102, 0.5); }
+.ipd-risk-keep { font-size: 10px; color: var(--dim); cursor: pointer; }
+.ipd-risk-check:checked ~ .ipd-row-main .ipd-risk-keep { color: var(--amber); }
+.ipd-risk-code {
+  display: block;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: #ff9a9a;
+  background: rgba(255, 82, 82, 0.09);
+  border-radius: 5px;
+  padding: 4px 7px;
+  word-break: break-all;
+}
+.ipd-risk-reason { font-size: 10px; line-height: 1.5; color: #ffb3b3; }
+.ipd-safety-preview-wrap { margin-top: 8px; }
+.ipd-safety-preview {
+  margin: 0;
+  max-height: 150px;
+  overflow: auto;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  line-height: 1.65;
+  color: var(--dim);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ipd-mark-danger { background: rgba(255, 82, 82, 0.28); color: #ffd0d0; border-radius: 3px; }
+.ipd-mark-kept { background: rgba(255, 209, 102, 0.25); color: var(--amber); border-radius: 3px; }
+
+/* ── mode chooser ──────────────────────────────────────────────────────── */
+.ipd-modes { display: flex; flex-direction: column; gap: 6px; }
+.ipd-mode {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-3);
+  cursor: pointer;
+}
+.ipd-mode:has(input:checked) { border-color: rgba(53, 224, 255, 0.5); background: rgba(53, 224, 255, 0.06); }
+.ipd-mode input { margin: 2px 0 0; accent-color: var(--cyan); }
+.ipd-mode span { display: flex; flex-direction: column; gap: 3px; }
+.ipd-mode b { font-size: 12px; color: var(--text); }
+.ipd-mode small { font-size: 10px; line-height: 1.5; color: var(--dim); }
+.ipd-replace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 11px;
+  font-size: 10.5px;
+  color: var(--dim);
+}
+.ipd-replace[hidden] { display: none; }
+.ipd-inactive { opacity: 0.45; }
+
+/* keyboard focus is never removed — every control keeps a visible ring */
+.ipd-close:focus-visible,
+.ipd-btn:focus-visible,
+.ipd-check:focus-visible,
+.ipd-mode input:focus-visible,
+.ipd-retry:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ipd-btn, .ipd-check, .ipd-close, .ipd-retry { transition-duration: 0ms; }
+}
+
